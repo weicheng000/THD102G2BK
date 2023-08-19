@@ -3,7 +3,9 @@
     <sidebar></sidebar>
     <div>
       <top></top>
-      <div>你好我是會員管理</div>
+      <div>
+        <h2>會員管理</h2>
+      </div>
     </div>
 </div>
 </template>
