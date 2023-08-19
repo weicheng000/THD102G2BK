@@ -58,7 +58,7 @@ h1 {
   width: 100%;
 }
 
-.wrapper{
+.thispage{
   display: grid;
   grid-template-columns: 1fr 5fr;
   min-height: 100vh;

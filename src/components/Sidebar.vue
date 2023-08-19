@@ -7,7 +7,7 @@ export default {
 </script>
 
 <template>
-  <div class="container">
+  <div class="content">
     <div class="logo">
       <img src="@/assets/images/PetpaGo.svg" />
     </div>
@@ -41,7 +41,7 @@ export default {
 </template>
 
 <style scoped>
-.container {
+.content {
   display: flex;
   width: 100%;
   height: 100%;
@@ -59,14 +59,20 @@ export default {
   flex-direction: column;
   align-items: flex-start;
   gap: 28px;
+  margin: 0;
+  padding: 0;
 }
 
 .list {
+  padding: 0;
   color: #fff;
   font-family: "Noto Sans TC";
   display: flex;
   gap: 12px;
   padding: 10px 0;
   cursor: pointer;
+}
+.list > p {
+  margin: 0;
 }
 </style>

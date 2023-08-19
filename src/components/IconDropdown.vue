@@ -225,6 +225,8 @@ hr {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  margin: 0;
+  padding: 0;
 }
 .header__item {
   padding: 1rem;
@@ -253,8 +255,9 @@ hr {
   right: 0;
   position: absolute;
   z-index: 10;
-  height: 25rem;
   min-width: 300px;
+  margin: 0;
+  padding: 0;
   margin-top: 1rem;
   overflow-y: auto;
   padding: 2rem 1rem 2rem 0rem;
@@ -262,6 +265,7 @@ hr {
   background-color: white;
   border: 1px solid var(--color-gray);
   background-clip: padding-box;
+  box-shadow: 2px 8px 24px 0px rgba(0, 0, 0, 0.1);
 }
 .dropdown__menu-link {
   display: flex;

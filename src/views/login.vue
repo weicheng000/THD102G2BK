@@ -7,7 +7,7 @@ export default {
 </script>
 
 <template>
-  <div class="container">
+  <div class="loginpage">
     <div class="login">
       <div>
         <h1>登入</h1>
@@ -39,7 +39,7 @@ export default {
 </template>
 
 <style scoped>
-.container {
+.loginpage {
   background: conic-gradient(
     from 219deg at 67.12% 74.12%,
     #5741fa 0deg,

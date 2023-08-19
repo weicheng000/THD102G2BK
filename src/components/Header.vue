@@ -10,7 +10,7 @@ export default {
 };
 </script>
 <template>
-  <div class="container">
+  <div class="content">
     <div class="control">
       <div class="name">王緯育</div>
       <iconDropdown></iconDropdown>
@@ -18,7 +18,7 @@ export default {
   </div>
 </template>
 <style scoped>
-.container {
+.content {
   display: flex;
   justify-content: flex-end;
   padding: 16px;
