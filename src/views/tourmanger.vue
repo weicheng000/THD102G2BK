@@ -3,7 +3,7 @@
     <sidebar></sidebar>
     <div>
       <top></top>
-      <div>
+      <div class="container mt-4">
         <h2>旅宿管理</h2>
       </div>
     </div>

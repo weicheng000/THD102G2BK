@@ -3,7 +3,7 @@
     <sidebar></sidebar>
     <div>
       <top></top>
-      <div>
+      <div class="container mt-4">
         <h2>會員管理</h2>
       </div>
     </div>
@@ -11,7 +11,7 @@
 </template>
 <script>
 import Sidebar from "../components/Sidebar.vue";
-import Top from "../components/Header.vue"
+import Top from "../components/Header.vue";
 export default {
   components: {
     Sidebar,
