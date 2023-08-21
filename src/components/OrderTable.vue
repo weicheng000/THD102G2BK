@@ -129,9 +129,9 @@ const gridOptions = reactive({
   exportConfig: {
     remote: true,
     // 默认选中类型
-    type: "xlsx",
+    type: "csv",
     // 局部自定义类型
-    types: ["xlsx", "csv", "html", "xml", "txt"],
+    types: ["csv", "html", "xml", "txt"],
     // 自定义数据量列表
     modes: ["current", "all"],
   },

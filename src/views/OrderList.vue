@@ -143,6 +143,17 @@ export default {
       }]
     };
   },
+  mount() {
+    // 使用 replace 方法更改網址，但不會導致頁面重新載入
+    const randomValue = Math.random().toString(36).substring(7);
+    this.$router.replace({
+      name: 'OrderList',
+      params: {
+        OrderId: this.$route.params.OrderId, // 保持不變
+        Info: randomValue
+      }
+    });
+  }
 };
 </script>
 
