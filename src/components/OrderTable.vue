@@ -141,7 +141,7 @@ const gridOptions = reactive({
     { field: "MemberId", title: "訂購人會員編號" },
     { field: "OrderDate", title: "訂單日期" },
     { field: "Info", title: "查看", slots: { default: "view" } },
-    { field: "Info", title: "狀態", slots: { default: "text" } },
+    { field: "", title: "狀態", slots: { default: "text" } },
   ],
   toolbarConfig: {
     slots: {

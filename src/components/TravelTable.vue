@@ -14,20 +14,29 @@
         <vxe-switch v-model="row.Info"></vxe-switch>
       </template>
       <template #icon>
-        <i class="bi bi-pencil-fill"></i>
+        <i class="vxe-icon-setting-fill"></i>
       </template>
     </vxe-grid>
   </div>
 </template>
 
 <script setup>
-import { reactive,ref } from "vue";
+import { reactive, ref } from "vue";
 // 模拟分页接口
 const fetchApi = (currentPage, pageSize) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       const list = [
-        { OrderId: "SH00001", MemberId: "快樂寵物旅館", Info: true }
+        { OrderId: "SH00001", MemberId: "快樂寵物旅館", Info: true },
+        { OrderId: "SH00002", MemberId: "狗狗假期", Info: false },
+        { OrderId: "SH00003", MemberId: "貓咪天地", Info: true },
+        { OrderId: "SH00004", MemberId: "寵物樂園", Info: false },
+        { OrderId: "SH00005", MemberId: "愛心寵物屋", Info: true },
+        { OrderId: "SH00006", MemberId: "快樂動物城", Info: false },
+        { OrderId: "SH00007", MemberId: "愛寵家園", Info: true },
+        { OrderId: "SH00008", MemberId: "小動物樂園", Info: false },
+        { OrderId: "SH00009", MemberId: "寵物夢想家", Info: true },
+        { OrderId: "SH00010", MemberId: "歡樂寵物園", Info: false },
       ];
       resolve({
         page: {
@@ -73,9 +82,9 @@ const gridOptions = reactive({
     //控制欄位項目與屬性
     { field: "OrderId", title: "旅宿編號" },
     { field: "MemberId", title: "旅宿名稱" },
-    { field: "Info", title: "上架狀態", slots: { default: "view" }},
-    { field: "", title: "上/下架", slots: { default: "edit" }},
-    { field: "", title: "編輯", slots:{ default: "icon" }},
+    { field: "Info", title: "上架狀態", slots: { default: "view" } },
+    { field: "", title: "上/下架", slots: { default: "edit" } },
+    { field: "", title: "編輯", slots: { default: "icon" } },
   ],
   toolbarConfig: {
     slots: {
@@ -109,11 +118,11 @@ const gridOptions = reactive({
 });
 </script>
 <style scoped>
-*{
-    font-size: 1em;;
+* {
+  font-size: 1em;
 }
-.btn{
-    margin: 0;
-    padding: 0;
+.btn {
+  margin: 0;
+  padding: 0;
 }
 </style>

@@ -5,7 +5,14 @@
       <top></top>
       <div class="container mt-4">
         <h2>會員管理</h2>
-        <member-table></member-table>
+        <div class="card mt-4 shadow-lg">
+          <div class="card-header">
+            <h5>會員列表</h5>
+          </div>
+          <div class="card-body">
+            <member-table></member-table>
+          </div>
+        </div>
       </div>
     </div>
 </div>

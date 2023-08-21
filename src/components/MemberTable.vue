@@ -7,39 +7,97 @@
       </template>
       <template #view="{ row }">
         <!-- 自定義的按鈕或其他內容 -->
-        <button type="button" class="btn btn-link" :disabled="row.Info === 0">
-          <i class="vxe-icon-eye-fill"></i>
-        </button>
+        <span v-if="row.Info == 1">停權</span>
+        <span v-if="row.Info == 2">黑名單</span>
+        <span v-if="row.Info == 0">正常</span>
       </template>
-      <template #text="{ row }">
-        <!-- 自定義的按鈕或其他內容 -->
-        <button v-if="row.Info === 0" type="button" class="btn btn-link">待審核</button>
-        <span v-else-if="row.Info === 1">已核准</span>
-        <span v-else>已取消</span>
+      <template #action="{ row }">
+        <select class="form-select" v-model="row.Info">
+          <option value="0" :selected="row.Info == 0">正常</option>
+          <option value="1" :selected="row.Info == 1">停權</option>
+          <option value="2" :selected="row.Info == 2">黑名單</option>
+        </select>
+        <!-- <vxe-select v-model="row.Info" size="small">
+          <vxe-option value="0" label="正常"></vxe-option>
+          <vxe-option value="1" label="停權"></vxe-option>
+          <vxe-option value="2" label="黑名單"></vxe-option>
+        </vxe-select> -->
       </template>
     </vxe-grid>
   </div>
 </template>
 
 <script setup>
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
+const xGrid = ref();
 // 模拟分页接口
 const fetchApi = (currentPage, pageSize) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       const list = [
-        { OrderId: "OR00001", MemberId: "MB00001", OrderDate: "2023-07-01", Info: 0 },
-      { OrderId: "OR00002", MemberId: "MB00002", OrderDate: "2023-07-02", Info: 1 },
-      { OrderId: "OR00003", MemberId: "MB00003", OrderDate: "2023-07-03", Info: 2 },
-      { OrderId: "OR00004", MemberId: "MB00004", OrderDate: "2023-07-04", Info: 0 },
-      { OrderId: "OR00005", MemberId: "MB00005", OrderDate: "2023-07-05", Info: 1 },
-      { OrderId: "OR00006", MemberId: "MB00006", OrderDate: "2023-07-06", Info: 2 },
-      { OrderId: "OR00007", MemberId: "MB00007", OrderDate: "2023-07-07", Info: 0 },
-      { OrderId: "OR00008", MemberId: "MB00008", OrderDate: "2023-07-08", Info: 1 },
-      { OrderId: "OR00009", MemberId: "MB00009", OrderDate: "2023-07-09", Info: 2 },
-      { OrderId: "OR00010", MemberId: "MB00010", OrderDate: "2023-07-10", Info: 0 },
+        {
+          OrderId: "MB00001",
+          Name: "王緯育",
+          Email: "abc2345@gmail.com",
+          Info: 0,
+        },
+        {
+          OrderId: "MB00002",
+          Name: "張美娟",
+          Email: "def6789@gmail.com",
+          Info: 0,
+        },
+        {
+          OrderId: "MB00003",
+          Name: "陳宏志",
+          Email: "ghi1234@gmail.com",
+          Info: 0,
+        },
+        {
+          OrderId: "MB00004",
+          Name: "林雅玲",
+          Email: "jkl5678@gmail.com",
+          Info: 1,
+        },
+        {
+          OrderId: "MB00005",
+          Name: "黃信弘",
+          Email: "mno9012@gmail.com",
+          Info: 2,
+        },
+        {
+          OrderId: "MB00006",
+          Name: "劉怡君",
+          Email: "pqr3456@gmail.com",
+          Info: 1,
+        },
+        {
+          OrderId: "MB00007",
+          Name: "許明峰",
+          Email: "stu7890@gmail.com",
+          Info: 0,
+        },
+        {
+          OrderId: "MB00008",
+          Name: "吳佳蓉",
+          Email: "vwx1234@gmail.com",
+          Info: 1,
+        },
+        {
+          OrderId: "MB00009",
+          Name: "李宜倫",
+          Email: "yzab5678@gmail.com",
+          Info: 0,
+        },
+        {
+          OrderId: "MB00010",
+          Name: "陳明達",
+          Email: "cdef9012@gmail.com",
+          Info: 2,
+        },
       ];
       resolve({
+        result: list,
         page: {
           total: list.length,
         },
@@ -81,11 +139,11 @@ const gridOptions = reactive({
   },
   columns: [
     //控制欄位項目與屬性
-    { field: "OrderId", title: "訂單編號" },
-    { field: "MemberId", title: "訂購人會員編號" },
-    { field: "OrderDate", title: "訂單日期" },
-    { field: "Info", title: "查看", slots: { default: "view" } },
-    { field: "Info", title: "狀態", slots: { default: "text" } },
+    { field: "OrderId", title: "會員編號" },
+    { field: "Name", title: "會員姓名" },
+    { field: "Email", title: "電子郵箱" },
+    { field: "Info", title: "會員狀態", slots: { default: "view" } },
+    { title: "動作", slots: { default: "action" } },
   ],
   toolbarConfig: {
     slots: {
@@ -119,11 +177,11 @@ const gridOptions = reactive({
 });
 </script>
 <style scoped>
-*{
-    font-size: 1em;;
+* {
+  font-size: 1em;
 }
-.btn{
-    margin: 0;
-    padding: 0;
+.btn {
+  margin: 0;
+  padding: 0;
 }
 </style>
