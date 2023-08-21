@@ -45,26 +45,33 @@
 
     <vxe-modal
       v-model="showDetails"
-      title="旅宿詳情"
+      :title="selectRow ? '旅宿詳情' : '新增旅宿'"
       width="600"
       height="500"
       show-footer
     >
       <template #default>
+        <h6>請雙擊欄位以啟用編輯模式</h6>
         <vxe-table
           border="inner"
           auto-resize
           show-overflow
           height="auto"
+          ref="xTable"
           :row-config="{ isHover: true }"
           :show-header="false"
           :sync-resize="showDetails"
+          :edit-config="{ trigger: 'dblclick', mode: 'cell' }"
           :data="detailData"
         >
           <vxe-column field="label" width="25%"></vxe-column>
-          <vxe-column field="value">
-            <template #default="{ row }">
-              <div style="white-space: pre-line">{{ row.value }}</div>
+          <vxe-column field="value" :edit-render="{}">
+            <template #edit="{ row }">
+              <vxe-input
+                v-model="row.value"
+                type="text"
+                placeholder="{ row }"
+              ></vxe-input>
             </template>
           </vxe-column>
         </vxe-table>
@@ -79,8 +86,18 @@ import XEUtils from "xe-utils";
 
 const showDetails = ref(false);
 const detailData = ref([]);
-
+const xTable = ref();
 const xGrid = ref();
+const selectRow = ref();
+const formData = reactive({
+  HotelId: "",
+  HotelName: "",
+  Address: "",
+  RoomType: "",
+  RomeSet: "",
+  Comment: "",
+});
+
 // 模拟分页接口
 const fetchApi = (currentPage, pageSize) => {
   return new Promise((resolve) => {
@@ -216,8 +233,13 @@ const gridOptions = reactive({
     { field: "HotelId", title: "旅宿編號" },
     { field: "HotelName", title: "旅宿名稱" },
     { field: "Info", title: "上架狀態", slots: { default: "view" } },
-    { field: "", title: "上/下架", slots: { default: "edit" } },
-    { field: "", title: "編輯", slots: { default: "icon" } },
+    {
+      field: "",
+      title: "上/下架",
+      slots: { default: "edit" },
+      align: "center",
+    },
+    { field: "", title: "編輯", slots: { default: "icon" }, align: "center" },
   ],
   toolbarConfig: {
     slots: {
@@ -256,7 +278,6 @@ const showdetail = (row) => {
   detailData.value = [
     "HotelId",
     "HotelName",
-    "Info",
     "Address",
     "RoomType",
     "RomeSet",
@@ -264,6 +285,21 @@ const showdetail = (row) => {
   ].map((field) => {
     return { label: field, value: row[field] };
   });
+  selectRow.value = row;
+  showDetails.value = true;
+};
+const insertEvent = () => {
+  detailData.value = [
+    "HotelId",
+    "HotelName",
+    "Address",
+    "RoomType",
+    "RomeSet",
+    "Comment",
+  ].map((field) => {
+    return { label: field, value: null };
+  });
+  selectRow.value = null;
   showDetails.value = true;
 };
 </script>
