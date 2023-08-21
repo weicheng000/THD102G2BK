@@ -39,6 +39,14 @@ const fetchApi = (currentPage, pageSize) => {
           PostDate: "2023-01-23",
           Info: false,
         },
+        {
+          ReportId: "MB00004",
+          MemberId: "MB00002",
+          ReportDate: "2023-01-26",
+          ReportEmail: "abc2345@gmail.com",
+          PostDate: "2023-01-20",
+          Info: true,
+        },
       ];
       resolve({
         page: {
