@@ -5,17 +5,20 @@
         <vxe-input v-model="searchName" placeholder="訂單編號"></vxe-input>
         <vxe-button status="primary">搜索</vxe-button>
       </template>
-      <template #view="{ row }">
-        <!-- 自定義的按鈕或其他內容 -->
-        <button type="button" class="btn btn-link" :disabled="row.Info === 0">
-          <i class="vxe-icon-eye-fill"></i>
-        </button>
-      </template>
-      <template #text="{ row }">
-        <!-- 自定義的按鈕或其他內容 -->
-        <button v-if="row.Info === 0" type="button" class="btn btn-link">待審核</button>
-        <span v-else-if="row.Info === 1">已核准</span>
-        <span v-else>已取消</span>
+      <template #action="{ row }">
+        <vxe-button
+          type="text"
+          icon="vxe-icon-warnion-circle-fill"
+          content="下架"
+          :disabled="row.Info == true"
+        ></vxe-button>
+        <vxe-button
+          type="text"
+          icon="vxe-icon-check"
+          status="primary"
+          content="復原"
+          :disabled="row.Info == false"
+        ></vxe-button>
       </template>
     </vxe-grid>
   </div>
@@ -28,16 +31,14 @@ const fetchApi = (currentPage, pageSize) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       const list = [
-        { OrderId: "OR00001", MemberId: "MB00001", OrderDate: "2023-07-01", Info: 0 },
-      { OrderId: "OR00002", MemberId: "MB00002", OrderDate: "2023-07-02", Info: 1 },
-      { OrderId: "OR00003", MemberId: "MB00003", OrderDate: "2023-07-03", Info: 2 },
-      { OrderId: "OR00004", MemberId: "MB00004", OrderDate: "2023-07-04", Info: 0 },
-      { OrderId: "OR00005", MemberId: "MB00005", OrderDate: "2023-07-05", Info: 1 },
-      { OrderId: "OR00006", MemberId: "MB00006", OrderDate: "2023-07-06", Info: 2 },
-      { OrderId: "OR00007", MemberId: "MB00007", OrderDate: "2023-07-07", Info: 0 },
-      { OrderId: "OR00008", MemberId: "MB00008", OrderDate: "2023-07-08", Info: 1 },
-      { OrderId: "OR00009", MemberId: "MB00009", OrderDate: "2023-07-09", Info: 2 },
-      { OrderId: "OR00010", MemberId: "MB00010", OrderDate: "2023-07-10", Info: 0 },
+        {
+          ReportId: "MB00002",
+          MemberId: "MB00001",
+          ReportDate: "2023-01-28",
+          ReportEmail: "abc2345@gmail.com",
+          PostDate: "2023-01-23",
+          Info: false,
+        },
       ];
       resolve({
         page: {
@@ -81,11 +82,12 @@ const gridOptions = reactive({
   },
   columns: [
     //控制欄位項目與屬性
-    { field: "OrderId", title: "訂單編號" },
-    { field: "MemberId", title: "訂購人會員編號" },
-    { field: "OrderDate", title: "訂單日期" },
-    { field: "Info", title: "查看", slots: { default: "view" } },
-    { field: "Info", title: "狀態", slots: { default: "text" } },
+    { field: "ReportDate", title: "檢舉日期" },
+    { field: "ReportId", title: "檢舉者會員編號" },
+    { field: "MemberId", title: "被檢舉者會員編號" },
+    { field: "ReportEmail", title: "電子信箱" },
+    { field: "PostDate", title: "貼文張貼日期" },
+    { title: "動作", slots: { default: "action" } },
   ],
   toolbarConfig: {
     slots: {
@@ -117,13 +119,14 @@ const gridOptions = reactive({
     },
   },
 });
+
 </script>
 <style scoped>
-*{
-    font-size: 1em;;
+* {
+  font-size: 1em;
 }
-.btn{
-    margin: 0;
-    padding: 0;
+.btn {
+  margin: 0;
+  padding: 0;
 }
 </style>
