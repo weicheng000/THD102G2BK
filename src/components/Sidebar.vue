@@ -3,6 +3,11 @@ export default {
   data() {
     return {};
   },
+  methods: {
+    navigateTo(routePath) {
+      this.$router.push(routePath);
+    }
+  }
 };
 </script>
 
@@ -12,30 +17,22 @@ export default {
       <img src="@/assets/images/PetpaGo.svg" />
     </div>
     <ul class="select">
-      <router-link to="/OrderManager">
-        <li class="list">
-          <img src="@/assets/images/note-01.svg" alt="" />
-          <p>訂單管理</p>
-        </li>
-      </router-link>
-      <router-link to="/TourManager">
-        <li class="list">
-          <img src="@/assets/images/home-3.svg" alt="" />
-          <p>旅宿管理</p>
-        </li>
-      </router-link>
-      <router-link to="/MemberManager">
-        <li class="list">
-          <img src="@/assets/images/user-group.svg" alt="" />
-          <p>會員管理</p>
-        </li>
-      </router-link>
-      <router-link to="/PaperManager">
-        <li class="list">
-          <img src="@/assets/images/copy-2.svg" alt="" />
-          <p>貼文管理</p>
-        </li>
-      </router-link>
+      <li class="list" @click="navigateTo('/OrderManager')">
+        <img src="@/assets/images/note-01.svg" alt="" />
+        <p>訂單管理</p>
+      </li>
+      <li class="list" @click="navigateTo('/TourManager')">
+        <img src="@/assets/images/home-3.svg" alt="" />
+        <p>旅宿管理</p>
+      </li>
+      <li class="list" @click="navigateTo('/MemberManager')">
+        <img src="@/assets/images/user-group.svg" alt="" />
+        <p>會員管理</p>
+      </li>
+      <li class="list" @click="navigateTo('/PaperManager')">
+        <img src="@/assets/images/copy-2.svg" alt="" />
+        <p>貼文管理</p>
+      </li>
     </ul>
   </div>
 </template>
@@ -72,7 +69,8 @@ export default {
   padding: 10px 0;
   cursor: pointer;
 }
-.list > p {
+
+.list>p {
   margin: 0;
 }
 </style>
