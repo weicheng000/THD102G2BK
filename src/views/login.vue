@@ -26,7 +26,7 @@ export default {
         <input type="password" name="bg_password" id="bg_password" class="inputBar" />
       </div>
 
-      <div class="col">
+      <div class="col-12">
         <button type="button" class="btn_1">登入</button>
       </div>
       <div class="col-12">
