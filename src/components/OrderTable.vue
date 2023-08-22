@@ -108,7 +108,7 @@ const fetchApi = (currentPage, pageSize) => {
 };
 const gridOptions = reactive({
   border: true,
-  height: 650,
+  maxHeight: 600,
   rowConfig: {
     keyField: "id",
   },
@@ -126,15 +126,7 @@ const gridOptions = reactive({
     pageSize: 10,
     pageSizes: [10, 50, 100, 20, 50, 100, 200, 500, 1000],
   },
-  exportConfig: {
-    remote: true,
-    // 默认选中类型
-    type: "csv",
-    // 局部自定义类型
-    types: ["csv", "html", "xml", "txt"],
-    // 自定义数据量列表
-    modes: ["current", "all"],
-  },
+  exportConfig: {},
   columns: [
     //控制欄位項目與屬性
     { field: "OrderId", title: "訂單編號" },

@@ -2,7 +2,7 @@
   <div>
     <vxe-grid v-bind="gridOptions">
       <template #toolbar_buttons>
-        <vxe-input v-model="searchName" placeholder="訂單編號"></vxe-input>
+        <vxe-input placeholder="訂單編號"></vxe-input>
         <vxe-button status="primary">搜索</vxe-button>
       </template>
       <template #view="{ row }">
@@ -17,11 +17,6 @@
           <option value="1" :selected="row.Info == 1">停權</option>
           <option value="2" :selected="row.Info == 2">黑名單</option>
         </select>
-        <!-- <vxe-select v-model="row.Info" size="small">
-          <vxe-option value="0" label="正常"></vxe-option>
-          <vxe-option value="1" label="停權"></vxe-option>
-          <vxe-option value="2" label="黑名單"></vxe-option>
-        </vxe-select> -->
       </template>
     </vxe-grid>
   </div>
@@ -111,7 +106,7 @@ const fetchApi = (currentPage, pageSize) => {
 };
 const gridOptions = reactive({
   border: true,
-  height: 650,
+  maxHeight: 600,
   rowConfig: {
     keyField: "id",
   },
@@ -129,14 +124,7 @@ const gridOptions = reactive({
     pageSize: 10,
     pageSizes: [10, 50, 100, 20, 50, 100, 200, 500, 1000],
   },
-  exportConfig: {
-    // 默认选中类型
-    type: "xlsx",
-    // 局部自定义类型
-    types: ["xlsx", "csv", "html", "xml", "txt"],
-    // 自定义数据量列表
-    modes: ["current", "all"],
-  },
+  exportConfig: {},
   columns: [
     //控制欄位項目與屬性
     { field: "OrderId", title: "會員編號" },

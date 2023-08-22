@@ -2,7 +2,7 @@
   <div>
     <vxe-grid v-bind="gridOptions">
       <template #toolbar_buttons>
-        <vxe-input v-model="searchName" placeholder="訂單編號"></vxe-input>
+        <vxe-input placeholder="訂單編號"></vxe-input>
         <vxe-button status="primary">搜索</vxe-button>
       </template>
       <template #action="{ row }">
@@ -62,7 +62,7 @@ const fetchApi = (currentPage, pageSize) => {
 };
 const gridOptions = reactive({
   border: true,
-  height: 650,
+  maxHeight: 650,
   rowConfig: {
     keyField: "id",
   },
@@ -80,14 +80,7 @@ const gridOptions = reactive({
     pageSize: 10,
     pageSizes: [10, 50, 100, 20, 50, 100, 200, 500, 1000],
   },
-  exportConfig: {
-    // 默认选中类型
-    type: "xlsx",
-    // 局部自定义类型
-    types: ["xlsx", "csv", "html", "xml", "txt"],
-    // 自定义数据量列表
-    modes: ["current", "all"],
-  },
+  exportConfig: {},
   columns: [
     //控制欄位項目與屬性
     { field: "ReportDate", title: "檢舉日期" },
