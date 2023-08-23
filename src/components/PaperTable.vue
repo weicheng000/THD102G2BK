@@ -27,7 +27,6 @@
 <script setup>
 import { reactive } from "vue";
 // API接口
-const serveApiUrl = "/api";
 
 const gridOptions = reactive({
   border: true,
@@ -86,9 +85,9 @@ const gridOptions = reactive({
         console.log("currentPage:", page.currentPage);
         console.log("pageSize:", page.pageSize);
         await new Promise((resolve) => setTimeout(resolve, 10)); // 延遲10毫秒
-
+        // 在xampp部屬時要更改為/php/index.php
         const response = await fetch(
-          `${serveApiUrl}/index.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}`
+          `api/index.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}`
         );
 
         const data = await response.json();
