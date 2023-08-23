@@ -158,7 +158,13 @@
 
           <vxe-form-item :span="24">
             <template #default>
-              <drag-image></drag-image>
+              <div class="row justify-content-between p-3">
+                <drag-image></drag-image>
+                <drag-image></drag-image>
+                <drag-image></drag-image>
+                <drag-image></drag-image>
+                <drag-image></drag-image>
+              </div>
             </template>
           </vxe-form-item>
 
@@ -200,7 +206,6 @@
 import { reactive, ref } from "vue";
 import XEUtils from "xe-utils";
 import DragImage from "./DragImage.vue";
-
 
 const val1 = ref([]);
 const val2 = ref([]);
@@ -414,7 +419,6 @@ const insertEvent = () => {
   // })
   showEdit.value = true;
 };
-
 </script>
 <style scoped>
 * {

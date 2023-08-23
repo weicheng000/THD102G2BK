@@ -1,26 +1,28 @@
 <template>
-  <div
-    class="dragArea"
-    @dragover.prevent
-    @drop="handleDrop"
-    @click="triggerFileInput"
-  >
-    <div class="preViewSide">
-      <img v-if="previewImage" :src="previewImage" alt="Preview" />
+  <div class="out col-12">
+    <div
+      class="dragArea shadow-sm"
+      @dragover.prevent
+      @drop="handleDrop"
+      @click="triggerFileInput"
+    >
+      <div class="preViewSide">
+        <img v-if="previewImage" :src="previewImage" alt="Preview" />
+      </div>
+      <input
+        ref="fileInput"
+        type="file"
+        style="display: none"
+        @change="handleFileSelect"
+      />
     </div>
-    <input
-      ref="fileInput"
-      type="file"
-      style="display: none"
-      @change="handleFileSelect"
-    />
   </div>
 </template>
 <script>
 export default {
   data() {
     return {
-        previewImage: null
+      previewImage: null,
     };
   },
   methods: {
@@ -56,12 +58,23 @@ export default {
 };
 </script>
 <style scoped>
-    .dragArea{
-        width: 175px;
-        height: 156px;
-        background-color: #e0e0e0;
-    }
-    img{
-        width: 100%;
-    }
+.out {
+  width: 185px;
+  padding: 10px;
+}
+.dragArea {
+  width: 175px;
+  height: 156px;
+  background-image: url(@/assets/images/Group.svg);
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+.preViewSide{
+    width: 100%;
+    height: 100%;
+}
+img {
+  width: 100%;
+  height: 100%;
+}
 </style>
