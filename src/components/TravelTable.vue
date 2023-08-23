@@ -154,27 +154,33 @@
             field="RomeSet"
             title="旅宿環境:"
             :span="24"
-            :item-render="{}"
-          >
+          ></vxe-form-item>
+
+          <vxe-form-item :span="24">
             <template #default>
-              <div class="input-group">
-                <input
-                  type="file"
-                  class="form-control"
-                  id="inputGroupFile04"
-                  aria-describedby="inputGroupFileAddon04"
-                  aria-label="Upload"
-                  multiple
-                />
-              </div>
+              <drag-image></drag-image>
             </template>
           </vxe-form-item>
 
-          <vxe-form-item title="旅館簡介" title-align="left" :title-width="200" :span="24" :title-prefix="{message: '請注意字數不得超過125字', icon: 'vxe-icon-info-circle-fill'}"></vxe-form-item>
+          <vxe-form-item
+            title="旅館簡介"
+            title-align="left"
+            :title-width="200"
+            :span="24"
+            :title-prefix="{
+              message: '請注意字數不得超過125字',
+              icon: 'vxe-icon-info-circle-fill',
+            }"
+          ></vxe-form-item>
 
           <vxe-form-item field="Comment" :span="24" :item-render="{}">
             <template #default>
-              <vxe-textarea :autosize="{minRows: 4, maxRows: 7}" :show-word-count="true" placeholder="請輸入..." :maxlength="125"></vxe-textarea>
+              <vxe-textarea
+                :autosize="{ minRows: 4, maxRows: 7 }"
+                :show-word-count="true"
+                placeholder="請輸入..."
+                :maxlength="125"
+              ></vxe-textarea>
             </template>
           </vxe-form-item>
 
@@ -184,7 +190,6 @@
               <vxe-button type="reset">重置</vxe-button>
             </template>
           </vxe-form-item>
-
         </vxe-form>
       </template>
     </vxe-modal>
@@ -194,6 +199,8 @@
 <script setup>
 import { reactive, ref } from "vue";
 import XEUtils from "xe-utils";
+import DragImage from "./DragImage.vue";
+
 
 const val1 = ref([]);
 const val2 = ref([]);
@@ -407,6 +414,7 @@ const insertEvent = () => {
   // })
   showEdit.value = true;
 };
+
 </script>
 <style scoped>
 * {
@@ -415,5 +423,10 @@ const insertEvent = () => {
 .btn {
   margin: 0;
   padding: 0;
+}
+.preview {
+  width: 173px;
+  height: 156px;
+  background-color: blue;
 }
 </style>
