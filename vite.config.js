@@ -13,5 +13,14 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['vue-i18n']
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '/php')
+      }
+    }
   }
 })

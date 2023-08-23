@@ -26,40 +26,9 @@
 
 <script setup>
 import { reactive } from "vue";
-// 模拟分页接口
-const fetchApi = (currentPage, pageSize) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const list = [
-        {
-          ReportId: "MB00002",
-          MemberId: "MB00001",
-          ReportDate: "2023-01-28",
-          ReportEmail: "abc2345@gmail.com",
-          PostDate: "2023-01-23",
-          Info: false,
-        },
-        {
-          ReportId: "MB00004",
-          MemberId: "MB00002",
-          ReportDate: "2023-01-26",
-          ReportEmail: "abc2345@gmail.com",
-          PostDate: "2023-01-20",
-          Info: true,
-        },
-      ];
-      resolve({
-        page: {
-          total: list.length,
-        },
-        result: list.slice(
-          (currentPage - 1) * pageSize,
-          currentPage * pageSize
-        ),
-      });
-    }, 100);
-  });
-};
+// API接口
+const serveApiUrl = "/api";
+
 const gridOptions = reactive({
   border: true,
   maxHeight: 650,
@@ -77,8 +46,8 @@ const gridOptions = reactive({
   pagerConfig: {
     //控制是否可以分頁
     enabled: true,
-    pageSize: 10,
-    pageSizes: [10, 50, 100, 20, 50, 100, 200, 500, 1000],
+    // pageSize: 10,
+    // pageSizes: [10, 50, 100, 200, 500, 1000],
   },
   exportConfig: {},
   columns: [
@@ -113,14 +82,24 @@ const gridOptions = reactive({
       total: "page.total",
     },
     ajax: {
-      // 接收 Promise
-      query: ({ page }) => {
-        return fetchApi(page.currentPage, page.pageSize);
+      query: async ({ page }) => {
+        console.log("currentPage:", page.currentPage);
+        console.log("pageSize:", page.pageSize);
+        await new Promise((resolve) => setTimeout(resolve, 10)); // 延遲10毫秒
+
+        const response = await fetch(
+          `${serveApiUrl}/index.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}`
+        );
+
+        const data = await response.json();
+        const result = data.result;
+        const total = data.page.totalPages;
+
+        return { result, page: { total } };
       },
     },
   },
 });
-
 </script>
 <style scoped>
 * {
