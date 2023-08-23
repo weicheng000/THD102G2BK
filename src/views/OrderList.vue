@@ -7,28 +7,33 @@
       <div class="container mt-4">
         <div class="row">
           <div class="col-12">
-            <h3>檢視訂單: {{ $route.params.OrderId }}</h3>
+            <h3>檢視訂單</h3>
           </div>
         </div>
 
         <div class="row mt-4">
-          <div class="col-2">
-            <div class="card text-bg-secondary">
-              <div class="card-body">訂單編號：{{ $route.params.OrderId }}</div>
-            </div>
-          </div>
-          <div class="col-3">
-            <div class="card text-bg-secondary">
-              <div class="card-body">訂購人會員編號：MB00002</div>
-            </div>
-          </div>
-          <div class="col-2">
-            <div class="card text-bg-secondary">
-              <div class="card-body">訂購總金額：65,535元</div>
+          <div class="col-9">
+            <div class="row">
+              <div class="col">
+                <div class="card text-bg-secondary">
+                  <div class="card-body">
+                    訂單編號：{{ $route.params.OrderId }}
+                  </div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="card text-bg-secondary">
+                  <div class="card-body">訂購人會員編號：MB00002</div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="card text-bg-secondary">
+                  <div class="card-body">訂購總金額：65,535元</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
         <div class="row mt-4">
           <div class="col-12">
             <div class="card">
@@ -52,8 +57,8 @@
                     </vxe-column>
                     <vxe-column field="value" title="數量"></vxe-column>
                     <vxe-column field="total" title="小記">
-                       <template #default="{ row }">
-                        <span>${{ row.total.toLocaleString('en-US') }}</span>
+                      <template #default="{ row }">
+                        <span>${{ row.total.toLocaleString("en-US") }}</span>
                       </template>
                     </vxe-column>
                   </vxe-table>
@@ -76,8 +81,8 @@
                       </template>
                     </vxe-column>
                     <vxe-column field="total" title="小記">
-                       <template #default="{ row }">
-                        <span>${{ row.total.toLocaleString('en-US') }}</span>
+                      <template #default="{ row }">
+                        <span>${{ row.total.toLocaleString("en-US") }}</span>
                       </template>
                     </vxe-column>
                   </vxe-table>
@@ -85,12 +90,8 @@
 
                 <div class="row" v-show="$route.params.Info === '0'">
                   <div class="col-12 d-flex justify-content-end">
-                    <button class="btn btn-outline-primary me-3">
-                      拒絕
-                    </button>
-                    <button class="btn btn-primary">
-                      核准
-                    </button>
+                    <button class="btn btn-outline-primary me-3">拒絕</button>
+                    <button class="btn btn-primary">核准</button>
                   </div>
                 </div>
               </div>
@@ -132,28 +133,30 @@ export default {
           total: 800,
         },
       ],
-      DriverOrder:[{
-        OrderId: "OR00001",
-        DriverId: "DR00001",
-        Type: 0,
-        StartAdd: "中和景新街235號",
-        EndAdd: "快樂寵物旅館",
-        Distance: 5,
-        total: 435
-      }]
+      DriverOrder: [
+        {
+          OrderId: "OR00001",
+          DriverId: "DR00001",
+          Type: 0,
+          StartAdd: "中和景新街235號",
+          EndAdd: "快樂寵物旅館",
+          Distance: 5,
+          total: 435,
+        },
+      ],
     };
   },
   mount() {
     // 使用 replace 方法更改網址，但不會導致頁面重新載入
     const randomValue = Math.random().toString(36).substring(7);
     this.$router.replace({
-      name: 'OrderList',
+      name: "OrderList",
       params: {
         OrderId: this.$route.params.OrderId, // 保持不變
-        Info: randomValue
-      }
+        Info: randomValue,
+      },
     });
-  }
+  },
 };
 </script>
 
