@@ -123,8 +123,7 @@ const gridOptions = reactive({
   pagerConfig: {
     //控制是否可以分頁
     enabled: true,
-    pageSize: 10,
-    pageSizes: [10, 50, 100, 20, 50, 100, 200, 500, 1000],
+    pageSize: 10
   },
   exportConfig: {},
   columns: [
