@@ -1,10 +1,24 @@
 <template>
   <div>
-    <vxe-grid v-bind="gridOptions">
-      <template #toolbar_buttons>
-        <vxe-input placeholder="訂單編號"></vxe-input>
-        <vxe-button status="primary">搜索</vxe-button>
+    <vxe-grid ref="xGrid" v-bind="gridOptions">
+
+
+      <template #toolbar_tools>
+        <vxe-form :data="formData">
+          <vxe-form-item field="ReportId" @submit="searchEvent" @reset="resetEvent">
+            <template #default>
+              <vxe-input v-model="formData.ReportId" type="text" placeholder="請輸入檢舉者會員編號"></vxe-input>
+            </template>
+          </vxe-form-item>
+          <vxe-form-item>
+            <template #default>
+              <vxe-button type="submit" status="primary" content="查詢"></vxe-button>
+              <vxe-button type="reset" content="重置"></vxe-button>
+            </template>
+          </vxe-form-item>
+        </vxe-form>
       </template>
+
       <template #action="{ row }">
         <vxe-button
           type="text"
@@ -25,8 +39,12 @@
 </template>
 
 <script setup>
-import { reactive } from "vue";
-// API接口
+import { reactive, ref } from "vue";
+
+const xGrid = ref();
+const formData = reactive({
+  ReportId: ''
+})
 
 const gridOptions = reactive({
   border: true,
@@ -60,7 +78,7 @@ const gridOptions = reactive({
   ],
   toolbarConfig: {
     slots: {
-      buttons: "toolbar_buttons",
+      tools: 'toolbar_tools',
     },
     export: {
       icon: "vxe-icon-cloud-download",
@@ -87,7 +105,7 @@ const gridOptions = reactive({
         await new Promise((resolve) => setTimeout(resolve, 10)); // 延遲10毫秒
         // 在xampp部屬時要更改為/php/index.php
         const response = await fetch(
-          `api/index.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}`
+          `PHP/index.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}`
         );
 
         const data = await response.json();
@@ -99,6 +117,21 @@ const gridOptions = reactive({
     },
   },
 });
+
+const searchEvent = () => {
+  const $grid = xGrid.value
+  if ($grid) {
+    console.log($grid);
+    $grid.commitProxy('query')
+  }
+}
+const resetEvent = () => {
+  const $grid = xGrid.value
+  if ($grid) {
+    $grid.commitProxy('reload')
+  }
+}
+
 </script>
 <style scoped>
 * {

@@ -1,13 +1,43 @@
 <script>
 export default {
   data() {
-    return {};
+    return {
+      adminID: "",
+      password: "",
+    };
   },
   methods: {
     navigateTo(routePath) {
       this.$router.push(routePath);
-    }
-  }
+    },
+    login() {
+      const requestData = {
+        adminID: this.adminID,
+        password: this.password,
+      };
+
+      // 使用 Fetch API 發送 POST 請求至 API
+      fetch("PHP/managers.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            alert("登入成功！");
+            this.navigateTo('/OrderManager');
+          } else {
+            alert("登入失敗：" + data.message);
+          }
+        })
+        .catch((error) => {
+          alert("發生錯誤", error);
+        });
+    },
+  },
 };
 </script>
 
@@ -18,21 +48,37 @@ export default {
         <h1>登入</h1>
       </div>
       <div class="inputType">
-        <label for="bg_account">帳號</label>
-        <input type="text" name="bg_account" id="bg_account" class="inputBar" />
+        <label for="adminID">帳號</label>
+        <input
+          v-model="adminID"
+          type="text"
+          name="adminID"
+          id="adminID"
+          class="inputBar"
+        />
       </div>
       <div class="inputType">
         <label for="bg_password">密碼</label>
-        <input type="password" name="bg_password" id="bg_password" class="inputBar" />
+        <input
+          v-model="password"
+          type="password"
+          name="password"
+          id="password"
+          class="inputBar"
+        />
       </div>
 
       <div class="col-12">
-        <button type="button" class="btn_1">登入</button>
+        <button type="button" class="btn_1" @click="login">登入</button>
       </div>
       <div class="col-12">
-
-        <button type="button" class="btn_0" @click="navigateTo('/OrderManager')">神奇小按鈕 點我點我</button>
-
+        <button
+          type="button"
+          class="btn_0"
+          @click="navigateTo('/OrderManager')"
+        >
+          神奇小按鈕 點我點我
+        </button>
       </div>
     </div>
   </div>
@@ -40,9 +86,11 @@ export default {
 
 <style scoped>
 .loginpage {
-  background: conic-gradient(from 219deg at 67.12% 74.12%,
-      #5741fa 0deg,
-      #09003e 360deg);
+  background: conic-gradient(
+    from 219deg at 67.12% 74.12%,
+    #5741fa 0deg,
+    #09003e 360deg
+  );
   width: 100vw;
   height: 100vh;
   display: flex;
