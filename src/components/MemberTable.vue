@@ -26,84 +26,84 @@
 import { reactive, ref } from "vue";
 const xGrid = ref();
 // 模拟分页接口
-const fetchApi = (currentPage, pageSize) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const list = [
-        {
-          OrderId: "MB00001",
-          Name: "王緯育",
-          Email: "abc2345@gmail.com",
-          Info: 0,
-        },
-        {
-          OrderId: "MB00002",
-          Name: "張美娟",
-          Email: "def6789@gmail.com",
-          Info: 0,
-        },
-        {
-          OrderId: "MB00003",
-          Name: "陳宏志",
-          Email: "ghi1234@gmail.com",
-          Info: 0,
-        },
-        {
-          OrderId: "MB00004",
-          Name: "林雅玲",
-          Email: "jkl5678@gmail.com",
-          Info: 1,
-        },
-        {
-          OrderId: "MB00005",
-          Name: "黃信弘",
-          Email: "mno9012@gmail.com",
-          Info: 2,
-        },
-        {
-          OrderId: "MB00006",
-          Name: "劉怡君",
-          Email: "pqr3456@gmail.com",
-          Info: 1,
-        },
-        {
-          OrderId: "MB00007",
-          Name: "許明峰",
-          Email: "stu7890@gmail.com",
-          Info: 0,
-        },
-        {
-          OrderId: "MB00008",
-          Name: "吳佳蓉",
-          Email: "vwx1234@gmail.com",
-          Info: 1,
-        },
-        {
-          OrderId: "MB00009",
-          Name: "李宜倫",
-          Email: "yzab5678@gmail.com",
-          Info: 0,
-        },
-        {
-          OrderId: "MB00010",
-          Name: "陳明達",
-          Email: "cdef9012@gmail.com",
-          Info: 2,
-        },
-      ];
-      resolve({
-        result: list,
-        page: {
-          total: list.length,
-        },
-        result: list.slice(
-          (currentPage - 1) * pageSize,
-          currentPage * pageSize
-        ),
-      });
-    }, 100);
-  });
-};
+// const fetchApi = (currentPage, pageSize) => {
+//   return new Promise((resolve) => {
+//     setTimeout(() => {
+//       const list = [
+//         {
+//           OrderId: "MB00001",
+//           Name: "王緯育",
+//           Email: "abc2345@gmail.com",
+//           Info: 0,
+//         },
+//         {
+//           OrderId: "MB00002",
+//           Name: "張美娟",
+//           Email: "def6789@gmail.com",
+//           Info: 0,
+//         },
+//         {
+//           OrderId: "MB00003",
+//           Name: "陳宏志",
+//           Email: "ghi1234@gmail.com",
+//           Info: 0,
+//         },
+//         {
+//           OrderId: "MB00004",
+//           Name: "林雅玲",
+//           Email: "jkl5678@gmail.com",
+//           Info: 1,
+//         },
+//         {
+//           OrderId: "MB00005",
+//           Name: "黃信弘",
+//           Email: "mno9012@gmail.com",
+//           Info: 2,
+//         },
+//         {
+//           OrderId: "MB00006",
+//           Name: "劉怡君",
+//           Email: "pqr3456@gmail.com",
+//           Info: 1,
+//         },
+//         {
+//           OrderId: "MB00007",
+//           Name: "許明峰",
+//           Email: "stu7890@gmail.com",
+//           Info: 0,
+//         },
+//         {
+//           OrderId: "MB00008",
+//           Name: "吳佳蓉",
+//           Email: "vwx1234@gmail.com",
+//           Info: 1,
+//         },
+//         {
+//           OrderId: "MB00009",
+//           Name: "李宜倫",
+//           Email: "yzab5678@gmail.com",
+//           Info: 0,
+//         },
+//         {
+//           OrderId: "MB00010",
+//           Name: "陳明達",
+//           Email: "cdef9012@gmail.com",
+//           Info: 2,
+//         },
+//       ];
+//       resolve({
+//         result: list,
+//         page: {
+//           total: list.length,
+//         },
+//         result: list.slice(
+//           (currentPage - 1) * pageSize,
+//           currentPage * pageSize
+//         ),
+//       });
+//     }, 100);
+//   });
+// };
 const gridOptions = reactive({
   border: true,
   maxHeight: 600,
@@ -126,7 +126,7 @@ const gridOptions = reactive({
   exportConfig: {},
   columns: [
     //控制欄位項目與屬性
-    { field: "OrderId", title: "會員編號" },
+    { field: "MemberId", title: "會員編號" },
     { field: "Name", title: "會員姓名" },
     { field: "Email", title: "電子郵箱" },
     { field: "Info", title: "會員狀態", slots: { default: "view" } },
@@ -156,12 +156,44 @@ const gridOptions = reactive({
     },
     ajax: {
       // 接收 Promise
-      query: ({ page }) => {
-        return fetchApi(page.currentPage, page.pageSize);
+      query: async ({ page }) => {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        const res = await fetch(
+          `/PHP/MemberTable/select.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}`
+        );
+
+        const data = await res.json();
+        const result = data.result.map((item) => ({
+          MemberId: formatValue(item.ID, 'MB'),
+          Name: item.NAME,
+          Email: item.EMAIL,
+          Info: formatInfo(item.STATUS)
+        }));
+        const total = data.page.totalPages;
+
+        return { result, page: { total } }
       },
     },
   },
 });
+
+function formatValue(value, tittle) {
+  const outPutValue = value.toString().padStart(5, "0");
+  return `${tittle}${outPutValue}`;
+}
+
+function formatInfo(value){
+  switch (value){
+    case '正常':
+      return 0;
+    case '停權':
+      return 1;
+    case '黑名單':
+      return 2;
+    default:
+      return 3;
+  }
+}
 </script>
 <style scoped>
 * {
