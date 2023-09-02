@@ -1,43 +1,64 @@
 <script>
-export default {
-  data() {
-    return {
-      adminID: "",
-      password: "",
-    };
-  },
-  methods: {
-    navigateTo(routePath) {
-      this.$router.push(routePath);
-    },
-    login() {
-      const requestData = {
-        adminID: this.adminID,
-        password: this.password,
-      };
+import { reactive, onMounted } from 'vue';
+import router from '@/router';
 
-      // 使用 Fetch API 發送 POST 請求至 API
-      fetch("PHP/managers.php", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            alert("登入成功！");
-            this.navigateTo('/OrderManager');
-          } else {
-            alert("登入失敗：" + data.message);
-          }
-        })
-        .catch((error) => {
-          alert("發生錯誤", error);
+export default {
+  setup() {
+    const account = reactive({
+      account: '',
+      password: ''
+    });
+
+    const checkLogin = () => {
+      const user = JSON.parse(localStorage.getItem('user'));
+
+      if (user && user.login === true) {
+        // 如果用戶已經登入，自動導向登入後的頁面
+        router.push('/OrderManager');
+      }
+    };
+
+    onMounted(() => {
+      checkLogin();
+    });
+
+    const login = async () => {
+      try {
+        const res = await fetch('/PHP/BackgroundLogin/login.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(account)
         });
-    },
-  },
+        if (res.ok) {
+          console.log('login!');
+          const user = {
+            account: account.account,
+            login: true
+          }
+          localStorage.setItem('user', JSON.stringify(user));
+          router.push('/OrderManager')
+        } else {
+          console.log('Bad!');
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const TypeAuto = () => {
+      account.account = 'petpago';
+      account.password = 'a123456'
+    }
+
+    return {
+      account,
+      login,
+      TypeAuto
+    }
+  }
+
 };
 </script>
 
@@ -49,34 +70,18 @@ export default {
       </div>
       <div class="inputType">
         <label for="adminID">帳號</label>
-        <input
-          v-model="adminID"
-          type="text"
-          name="adminID"
-          id="adminID"
-          class="inputBar"
-        />
+        <input v-model="account.account" type="text" class="inputBar" />
       </div>
       <div class="inputType">
         <label for="bg_password">密碼</label>
-        <input
-          v-model="password"
-          type="password"
-          name="password"
-          id="password"
-          class="inputBar"
-        />
+        <input v-model="account.password" type="password" class="inputBar" />
       </div>
 
       <div class="col-12">
         <button type="button" class="btn_1" @click="login">登入</button>
       </div>
       <div class="col-12">
-        <button
-          type="button"
-          class="btn_0"
-          @click="navigateTo('/OrderManager')"
-        >
+        <button type="button" class="btn_0" @click="TypeAuto()">
           神奇小按鈕 點我點我
         </button>
       </div>
@@ -86,11 +91,9 @@ export default {
 
 <style scoped>
 .loginpage {
-  background: conic-gradient(
-    from 219deg at 67.12% 74.12%,
-    #5741fa 0deg,
-    #09003e 360deg
-  );
+  background: conic-gradient(from 219deg at 67.12% 74.12%,
+      #5741fa 0deg,
+      #09003e 360deg);
   width: 100vw;
   height: 100vh;
   display: flex;

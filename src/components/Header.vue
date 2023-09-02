@@ -1,18 +1,36 @@
 <script>
-import IconDropdown from '../components/IconDropdown.vue'
+import { ref, onMounted } from 'vue';
+import router from '@/router'
+import IconDropdown from '@/components/IconDropdown.vue'
 export default {
   components: {
     IconDropdown
   },
-  data() {
-    return {};
-  },
+  setup(){
+    const userName = ref();
+    const checkLogin = () => {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if(user && user.login === true){
+        userName.value = user.account;
+      }else{
+        router.push('/')
+      }
+    };
+
+    onMounted(() => {
+      checkLogin();
+    });
+    
+    return {
+      userName
+    }
+  }
 };
 </script>
 <template>
   <div class="content">
     <div class="control">
-      <div class="name">王緯育</div>
+      <div class="name">{{ userName }}</div>
       <iconDropdown></iconDropdown>
     </div>
   </div>

@@ -1,10 +1,18 @@
 <script>
+import { ref } from 'vue';
+import router from '@/router';
 export default {
-  data() {
-    return {
-      show: false,
-    };
-  },
+  setup(){
+    const show = ref(false);
+    const logout = () => {
+      localStorage.removeItem('user');
+      router.push('/');
+    }
+    return{
+      show,
+      logout
+    }
+  }
 };
 </script>
 <template>
@@ -133,7 +141,7 @@ export default {
                   </li> -->
                   <li class="dropdown__menu-item">
                     <a
-                      href="#"
+                      @click="logout()"
                       class="dropdown__menu-link"
                       title="Subscriptions"
                     >
