@@ -1,10 +1,26 @@
 <template>
   <div>
-    <vxe-grid v-bind="gridOptions">
-      <template #toolbar_buttons>
+    <vxe-grid ref="xGrid" v-bind="gridOptions">
+      <!-- <template #toolbar_buttons>
         <vxe-input placeholder="訂單編號"></vxe-input>
         <vxe-button status="primary">搜索</vxe-button>
+      </template> -->
+
+      <template #toolbar_tools>
+        <vxe-form :data="formData" @submit="searchEvent">
+          <vxe-form-item field="name">
+            <template #default>
+              <vxe-input v-model="formData.MemberId" type="text" placeholder="請輸入會員編號"></vxe-input>
+            </template>
+          </vxe-form-item>
+          <vxe-form-item>
+            <template #default>
+              <vxe-button type="submit" status="primary" content="查詢"></vxe-button>
+            </template>
+          </vxe-form-item>
+        </vxe-form>
       </template>
+
       <template #view="{ row }">
         <!-- 自定義的按鈕或其他內容 -->
         <span v-if="row.Info == 1">停權</span>
@@ -24,89 +40,15 @@
 
 <script setup>
 import { reactive, ref } from "vue";
+import XEUtils from 'xe-utils';
 const xGrid = ref();
-// 模拟分页接口
-// const fetchApi = (currentPage, pageSize) => {
-//   return new Promise((resolve) => {
-//     setTimeout(() => {
-//       const list = [
-//         {
-//           OrderId: "MB00001",
-//           Name: "王緯育",
-//           Email: "abc2345@gmail.com",
-//           Info: 0,
-//         },
-//         {
-//           OrderId: "MB00002",
-//           Name: "張美娟",
-//           Email: "def6789@gmail.com",
-//           Info: 0,
-//         },
-//         {
-//           OrderId: "MB00003",
-//           Name: "陳宏志",
-//           Email: "ghi1234@gmail.com",
-//           Info: 0,
-//         },
-//         {
-//           OrderId: "MB00004",
-//           Name: "林雅玲",
-//           Email: "jkl5678@gmail.com",
-//           Info: 1,
-//         },
-//         {
-//           OrderId: "MB00005",
-//           Name: "黃信弘",
-//           Email: "mno9012@gmail.com",
-//           Info: 2,
-//         },
-//         {
-//           OrderId: "MB00006",
-//           Name: "劉怡君",
-//           Email: "pqr3456@gmail.com",
-//           Info: 1,
-//         },
-//         {
-//           OrderId: "MB00007",
-//           Name: "許明峰",
-//           Email: "stu7890@gmail.com",
-//           Info: 0,
-//         },
-//         {
-//           OrderId: "MB00008",
-//           Name: "吳佳蓉",
-//           Email: "vwx1234@gmail.com",
-//           Info: 1,
-//         },
-//         {
-//           OrderId: "MB00009",
-//           Name: "李宜倫",
-//           Email: "yzab5678@gmail.com",
-//           Info: 0,
-//         },
-//         {
-//           OrderId: "MB00010",
-//           Name: "陳明達",
-//           Email: "cdef9012@gmail.com",
-//           Info: 2,
-//         },
-//       ];
-//       resolve({
-//         result: list,
-//         page: {
-//           total: list.length,
-//         },
-//         result: list.slice(
-//           (currentPage - 1) * pageSize,
-//           currentPage * pageSize
-//         ),
-//       });
-//     }, 100);
-//   });
-// };
+
+const formData = reactive({
+  MemberId: ''
+})
+
 const gridOptions = reactive({
   border: true,
-  maxHeight: 600,
   rowConfig: {
     keyField: "id",
   },
@@ -117,6 +59,9 @@ const gridOptions = reactive({
   checkboxConfig: {
     //控制是否可以有checkbox屬性
     reserve: true,
+  },
+  filterConfig: {
+    remote: true
   },
   pagerConfig: {
     //控制是否可以分頁
@@ -134,7 +79,8 @@ const gridOptions = reactive({
   ],
   toolbarConfig: {
     slots: {
-      buttons: "toolbar_buttons",
+      buttons: 'toolbar_buttons',
+      tools: 'toolbar_tools',
     },
     export: {
       icon: "vxe-icon-cloud-download",
@@ -150,16 +96,23 @@ const gridOptions = reactive({
   },
   proxyConfig: {
     seq: true,
+    filter: true,
     props: {
       result: "result",
       total: "page.total",
     },
     ajax: {
       // 接收 Promise
-      query: async ({ page }) => {
+      query: async ({ page, filters }) => {
+        const queryParams = Object.assign({}, formData);
+
+        filters.forEach(({ field, values }) => {
+          queryParams[field] = values.join(',')
+        })
+
         await new Promise((resolve) => setTimeout(resolve, 10));
         const res = await fetch(
-          `/PHP/MemberTable/select.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}`
+          `/thd102/g2/php/MemberTable/select.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}&${XEUtils.serialize(queryParams)}`
         );
 
         const data = await res.json();
@@ -192,6 +145,13 @@ function formatInfo(value){
       return 2;
     default:
       return 3;
+  }
+}
+
+const searchEvent = () => {
+  const $grid = xGrid.value
+  if ($grid) {
+    $grid.commitProxy('query')
   }
 }
 </script>

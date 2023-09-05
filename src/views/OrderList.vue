@@ -17,18 +17,18 @@
               <div class="col">
                 <div class="card text-bg-secondary">
                   <div class="card-body">
-                    訂單編號：{{ $route.params.OrderId }}
+                    訂單編號：{{ formatValue($route.params.OrderId, "OR") }}
                   </div>
                 </div>
               </div>
               <div class="col">
                 <div class="card text-bg-secondary">
-                  <div class="card-body">訂購人會員編號：MB00002</div>
+                  <div class="card-body">訂購人會員編號：{{ formatValue($route.params.MemberId,"MB").toLocaleString("en-US") }}</div>
                 </div>
               </div>
               <div class="col">
                 <div class="card text-bg-secondary">
-                  <div class="card-body">訂購總金額：65,535元</div>
+                  <div class="card-body">訂購總金額：{{ (hotelTotalSum + driverTotalSum) }} 元</div>
                 </div>
               </div>
             </div>
@@ -44,19 +44,20 @@
                 <h5 class="card-title mb-4">旅宿資料</h5>
                 <div class="col-12 mb-4">
                   <vxe-table border :data="HotelOrder">
-                    <vxe-column
-                      field="HotelOrderId"
-                      title="旅宿編號"
-                    ></vxe-column>
-                    <vxe-column field="HotelName" title="旅宿名稱"></vxe-column>
-                    <vxe-column field="Type" title="房型">
+                    <vxe-column field="HotelOrderId" title="旅宿編號">
                       <template #default="{ row }">
-                        <span v-if="row.Type === 0">貓套房</span>
-                        <span v-else>狗套房</span>
+                        {{ formatValue(row.HotelOrderId, "SH") }}
                       </template>
                     </vxe-column>
+                    <vxe-column field="HotelName" title="旅宿名稱"></vxe-column>
+                    <vxe-column field="Type" title="房型">
+                      <!-- <template #default="{ row }">
+                        <span v-if="row.Type === 0">貓套房</span>
+                        <span v-else>狗套房</span>
+                      </template> -->
+                    </vxe-column>
                     <vxe-column field="value" title="數量"></vxe-column>
-                    <vxe-column field="total" title="小記">
+                    <vxe-column field="total" title="小計">
                       <template #default="{ row }">
                         <span>${{ row.total.toLocaleString("en-US") }}</span>
                       </template>
@@ -68,10 +69,10 @@
                 <div class="col-12 mb-4">
                   <vxe-table border :data="DriverOrder">
                     <vxe-column field="Type" title="車型">
-                      <template #default="{ row }">
+                      <!-- <template #default="{ row }">
                         <span v-if="row.Type === 0">轎車</span>
                         <span v-else>休旅車</span>
-                      </template>
+                      </template> -->
                     </vxe-column>
                     <vxe-column field="StartAdd" title="迄點"></vxe-column>
                     <vxe-column field="EndAdd" title="終點"></vxe-column>
@@ -80,7 +81,7 @@
                         <span>{{ row.Distance }}公里</span>
                       </template>
                     </vxe-column>
-                    <vxe-column field="total" title="小記">
+                    <vxe-column field="total" title="小計">
                       <template #default="{ row }">
                         <span>${{ row.total.toLocaleString("en-US") }}</span>
                       </template>
@@ -88,7 +89,7 @@
                   </vxe-table>
                 </div>
 
-                <div class="row" v-show="$route.params.Info === '0'">
+                <div class="row" v-show="$route.params.Info === '待審核'">
                   <div class="col-12 d-flex justify-content-end">
                     <button class="btn btn-outline-primary me-3">拒絕</button>
                     <button class="btn btn-primary">核准</button>
@@ -115,50 +116,61 @@ export default {
   },
   data() {
     return {
-      HotelOrder: [
-        {
-          OrderId: "OR00001",
-          HotelOrderId: "SH00001",
-          HotelName: "快樂寵物旅館",
-          Type: 0,
-          value: 1,
-          total: 1800,
-        },
-        {
-          OrderId: "OR00301",
-          HotelOrderId: "SH00001",
-          HotelName: "毛起來住",
-          Type: 1,
-          value: 1,
-          total: 800,
-        },
-      ],
-      DriverOrder: [
-        {
-          OrderId: "OR00001",
-          DriverId: "DR00001",
-          Type: 0,
-          StartAdd: "中和景新街235號",
-          EndAdd: "快樂寵物旅館",
-          Distance: 5,
-          total: 435,
-        },
-      ],
+      HotelOrder: [],
+      DriverOrder: [],
     };
   },
-  mount() {
-    // 使用 replace 方法更改網址，但不會導致頁面重新載入
-    const randomValue = Math.random().toString(36).substring(7);
-    this.$router.replace({
-      name: "OrderList",
-      params: {
-        OrderId: this.$route.params.OrderId, // 保持不變
-        Info: randomValue,
-      },
-    });
+  mounted() {
+    this.Initial();
   },
+  computed: {
+    hotelTotalSum() {
+      return this.HotelOrder.reduce((accumulator, currentItem) => accumulator + currentItem.total, 0)
+    },
+    driverTotalSum() {
+      return this.DriverOrder.reduce((accumulator, currentItem) => accumulator + currentItem.total, 0)
+    }
+  }
+  ,
+  methods: {
+    Initial() {
+      // console.log("begin!");
+      const MemberId = this.$route.params.OrderId;
+      fetch(`/thd102/g2/php/OrderTableList/select.php?MemberId=${MemberId}`, {
+        method: 'GET'
+      }).then((res) => res.json()).then((data) => {
+        // console.log(data.hotel);
+
+        const hotel = data.hotel.map((item) => ({
+          OrderId: this.$route.params.OrderId[0],
+          HotelOrderId: item.HOTELINFO_ID,
+          HotelName: item.HOTELNAME,
+          Type: item.PRODUCTNAME,
+          value: item.AMOUNT,
+          total: item.NOWPRICE
+        }));
+
+        const driver = data.driver.map((driver) => ({
+          OrderId: this.$route.params.OrderId[0],
+          Type: driver.PRODUCTNAME,
+          StartAdd: driver.START,
+          EndAdd: driver.END,
+          Distance: driver.QUANTITY,
+          total: driver.NOWPRICE,
+        }));
+        // console.log(hotel);
+        this.HotelOrder = hotel;
+        this.DriverOrder = driver;
+      }).catch(error => {
+        console.error("error:", error);
+      })
+    },
+    formatValue(value, tittle) {
+      const outPutValue = value.toString().padStart(5, "0");
+      return `${tittle}${outPutValue}`;
+    }
+  }
 };
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

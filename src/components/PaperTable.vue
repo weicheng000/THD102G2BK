@@ -4,16 +4,15 @@
 
 
       <template #toolbar_tools>
-        <vxe-form :data="formData">
-          <vxe-form-item field="ReportId" @submit="searchEvent" @reset="resetEvent">
+        <vxe-form :data="formData" @submit="searchEvent">
+          <vxe-form-item field="name">
             <template #default>
-              <vxe-input v-model="formData.ReportId" type="text" placeholder="請輸入檢舉者會員編號"></vxe-input>
+              <vxe-input v-model="formData.ReportId" type="text" placeholder="請輸入會員編號"></vxe-input>
             </template>
           </vxe-form-item>
           <vxe-form-item>
             <template #default>
               <vxe-button type="submit" status="primary" content="查詢"></vxe-button>
-              <vxe-button type="reset" content="重置"></vxe-button>
             </template>
           </vxe-form-item>
         </vxe-form>
@@ -40,6 +39,7 @@
 
 <script setup>
 import { reactive, ref } from "vue";
+import XEUtils from 'xe-utils';
 
 const xGrid = ref();
 const formData = reactive({
@@ -48,7 +48,6 @@ const formData = reactive({
 
 const gridOptions = reactive({
   border: true,
-  maxHeight: 650,
   rowConfig: {
     keyField: "id",
   },
@@ -60,11 +59,13 @@ const gridOptions = reactive({
     //控制是否可以有checkbox屬性
     reserve: true,
   },
+  filterConfig: {
+    remote: true
+  },
   pagerConfig: {
     //控制是否可以分頁
     enabled: true,
-    // pageSize: 10,
-    // pageSizes: [10, 50, 100, 200, 500, 1000],
+    pageSize: 10,
   },
   exportConfig: {},
   columns: [
@@ -78,6 +79,7 @@ const gridOptions = reactive({
   ],
   toolbarConfig: {
     slots: {
+      buttons: 'toolbar_buttons',
       tools: 'toolbar_tools',
     },
     export: {
@@ -94,22 +96,34 @@ const gridOptions = reactive({
   },
   proxyConfig: {
     seq: true,
+    filter: true,
     props: {
       result: "result",
       total: "page.total",
     },
     ajax: {
-      query: async ({ page }) => {
-        console.log("currentPage:", page.currentPage);
-        console.log("pageSize:", page.pageSize);
+      query: async ({ page, filters }) => {
+        const queryParams = Object.assign({}, formData);
+
+        filters.forEach(({ field, values }) => {
+          queryParams[field] = values.join(',')
+        })
+
         await new Promise((resolve) => setTimeout(resolve, 10)); // 延遲10毫秒
         // 在xampp部屬時要更改為/php/index.php
         const response = await fetch(
-          `PHP/index.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}`
+          `/thd102/g2/php/ReportsTable/select.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}&${XEUtils.serialize(queryParams)}`
         );
 
         const data = await response.json();
-        const result = data.result;
+        const result = data.result.map((item) => ({
+          ReportDate: item.REPORTSDATE,
+          ReportId: formatValue(item.REPORTSMEMBER_ID, 'MB'),
+          MemberId: formatValue(item.MEMBER_ID, 'MB'),
+          ReportEmail: item.EMAIL,
+          PostDate: item.POSTDATE,
+          Info: item.MODE = 0 ? true: false
+        }));
         const total = data.page.totalPages;
 
         return { result, page: { total } };
@@ -118,19 +132,23 @@ const gridOptions = reactive({
   },
 });
 
+function formatValue(value, tittle) {
+  const outPutValue = value.toString().padStart(5, "0");
+  return `${tittle}${outPutValue}`;
+}
+
 const searchEvent = () => {
   const $grid = xGrid.value
   if ($grid) {
-    console.log($grid);
     $grid.commitProxy('query')
   }
 }
-const resetEvent = () => {
-  const $grid = xGrid.value
-  if ($grid) {
-    $grid.commitProxy('reload')
-  }
-}
+// const resetEvent = () => {
+//   const $grid = xGrid.value
+//   if ($grid) {
+//     $grid.commitProxy('reload')
+//   }
+// }
 
 </script>
 <style scoped>

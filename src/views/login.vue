@@ -24,14 +24,18 @@ export default {
 
     const login = async () => {
       try {
-        const res = await fetch('/PHP/BackgroundLogin/login.php', {
+        const res = await fetch('/thd102/g2/php/BackgroundLogin/login.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(account)
         });
-        if (res.ok) {
+
+        const responseText = await res.text(); // 将响应内容转换为字符串
+        const responseJson = JSON.parse(responseText);
+
+        if (responseJson.login === 'success') {
           console.log('login!');
           const user = {
             account: account.account,
@@ -39,6 +43,7 @@ export default {
           }
           localStorage.setItem('user', JSON.stringify(user));
           router.push('/OrderManager')
+
         } else {
           console.log('Bad!');
         }

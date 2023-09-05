@@ -1,9 +1,24 @@
 <template>
   <div>
-    <vxe-grid v-bind="gridOptions">
-      <template #toolbar_buttons>
+    <vxe-grid ref="xGrid" v-bind="gridOptions">
+      <!-- <template #toolbar_buttons>
         <vxe-input placeholder="訂單編號"></vxe-input>
         <vxe-button status="primary">搜索</vxe-button>
+      </template> -->
+
+      <template #toolbar_tools>
+        <vxe-form :data="formData" @submit="searchEvent">
+          <vxe-form-item field="name">
+            <template #default>
+              <vxe-input v-model="formData.ID" type="text" placeholder="請輸入訂單編號"></vxe-input>
+            </template>
+          </vxe-form-item>
+          <vxe-form-item>
+            <template #default>
+              <vxe-button type="submit" status="primary" content="查詢"></vxe-button>
+            </template>
+          </vxe-form-item>
+        </vxe-form>
       </template>
 
       <template #OrderId="{ row }">
@@ -18,23 +33,15 @@
 
       <template #view="{ row }">
         <!-- 自定義的按鈕或其他內容 -->
-        <button
-          type="button"
-          class="btn btn-link"
-          :disabled="row.ORDERSTAUS === '待審核'"
-          @click="toPage(row.ID, row.ORDERSTAUS)"
-        >
+        <button type="button" class="btn btn-link" :disabled="row.ORDERSTAUS === '待審核'"
+          @click="toPage(row.ID, row.ORDERSTAUS, row.MEMBER_ID)">
           <i class="vxe-icon-eye-fill"></i>
         </button>
       </template>
       <template #text="{ row }">
         <!-- 自定義的按鈕或其他內容 -->
-        <button
-          v-if="row.ORDERSTAUS === '待審核'"
-          type="button"
-          class="btn btn-link"
-          @click="toPage(row.ID, row.ORDERSTAUS)"
-        >
+        <button v-if="row.ORDERSTAUS === '待審核'" type="button" class="btn btn-link"
+          @click="toPage(row.ID, row.ORDERSTAUS, row.MEMBER_ID)">
           待審核
         </button>
         <span v-else>{{ row.ORDERSTAUS }}</span>
@@ -46,87 +53,16 @@
 <script setup>
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-// 模拟分页接口
-// const fetchApi = (currentPage, pageSize) => {
-//   return new Promise((resolve) => {
-//     setTimeout(() => {
-//       const list = [
-//         {
-//           OrderId: "OR00001",
-//           MemberId: "MB00001",
-//           OrderDate: "2023-07-01",
-//           Info: 0,
-//         },
-//         {
-//           OrderId: "OR00002",
-//           MemberId: "MB00002",
-//           OrderDate: "2023-07-02",
-//           Info: 1,
-//         },
-//         {
-//           OrderId: "OR00003",
-//           MemberId: "MB00003",
-//           OrderDate: "2023-07-03",
-//           Info: 2,
-//         },
-//         {
-//           OrderId: "OR00004",
-//           MemberId: "MB00004",
-//           OrderDate: "2023-07-04",
-//           Info: 0,
-//         },
-//         {
-//           OrderId: "OR00005",
-//           MemberId: "MB00005",
-//           OrderDate: "2023-07-05",
-//           Info: 1,
-//         },
-//         {
-//           OrderId: "OR00006",
-//           MemberId: "MB00006",
-//           OrderDate: "2023-07-06",
-//           Info: 2,
-//         },
-//         {
-//           OrderId: "OR00007",
-//           MemberId: "MB00007",
-//           OrderDate: "2023-07-07",
-//           Info: 0,
-//         },
-//         {
-//           OrderId: "OR00008",
-//           MemberId: "MB00008",
-//           OrderDate: "2023-07-08",
-//           Info: 1,
-//         },
-//         {
-//           OrderId: "OR00009",
-//           MemberId: "MB00009",
-//           OrderDate: "2023-07-09",
-//           Info: 2,
-//         },
-//         {
-//           OrderId: "OR00010",
-//           MemberId: "MB00010",
-//           OrderDate: "2023-07-10",
-//           Info: 0,
-//         },
-//       ];
-//       resolve({
-//         page: {
-//           total: list.length,
-//         },
-//         result: list.slice(
-//           (currentPage - 1) * pageSize,
-//           currentPage * pageSize
-//         ),
-//       });
-//     }, 100);
-//   });
-// };
+import XEUtils from 'xe-utils';
+
+const xGrid = ref();
+
+const formData = reactive({
+  ID: ''
+})
+
 const gridOptions = reactive({
   border: true,
-  maxHeight: 600,
   rowConfig: {
     keyField: "id",
   },
@@ -137,6 +73,9 @@ const gridOptions = reactive({
   checkboxConfig: {
     //控制是否可以有checkbox屬性
     reserve: true,
+  },
+  filterConfig: {
+    remote: true
   },
   pagerConfig: {
     //控制是否可以分頁
@@ -158,7 +97,8 @@ const gridOptions = reactive({
   ],
   toolbarConfig: {
     slots: {
-      buttons: "toolbar_buttons",
+      buttons: 'toolbar_buttons',
+      tools: 'toolbar_tools',
     },
     export: {
       icon: "vxe-icon-cloud-download",
@@ -174,16 +114,23 @@ const gridOptions = reactive({
   },
   proxyConfig: {
     seq: true,
+    filter: true,
     props: {
       result: "result",
       total: "page.total",
     },
     ajax: {
       // 接收 Promise
-      query: async ({ page }) => {
+      query: async ({ page, filters }) => {
+        const queryParams = Object.assign({}, formData);
+
+        filters.forEach(({ field, values }) => {
+          queryParams[field] = values.join(',')
+        })
+
         await new Promise((resolve) => setTimeout(resolve, 10));
         const res = await fetch(
-          `/PHP/OrderTable/select.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}`
+          `/thd102/g2/php/OrderTable/select.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}&${XEUtils.serialize(queryParams)}`
         );
 
         const data = await res.json();
@@ -201,17 +148,25 @@ function formatValue(value, tittle) {
   return `${tittle}${outPutValue}`;
 }
 
+const searchEvent = () => {
+  const $grid = xGrid.value
+  if ($grid) {
+    $grid.commitProxy('query')
+  }
+}
+
 // 跳頁邏輯
 const router = useRouter();
 
-const toPage = (orderId, info) => {
-  router.push({ name: "OrderList", params: { OrderId: orderId, Info: info } });
+const toPage = (orderId, info, memberId) => {
+  router.push({ name: "OrderList", params: { OrderId: orderId, Info: info, MemberId: memberId } });
 };
 </script>
 <style scoped>
 * {
   font-size: 1em;
 }
+
 .btn {
   margin: 0;
   padding: 0;

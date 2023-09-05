@@ -7,7 +7,7 @@ const routes = [
   { path: '/TourManager', name: 'TourManager', component: () => import('@/views/tourmanger.vue')},
   { path: '/PaperManager', name: 'PaperManager', component: () => import('@/views/papermanager.vue')},
   { path: '/MemberManager', name: 'MemberManager', component: () => import('@/views/membermanager.vue') },
-  { path: '/OrderManager/:OrderId+:Info', name: 'OrderList', component: () => import('@/views/OrderList.vue') },
+  { path: '/OrderManager/:OrderId/:MemberId/:Info', name: 'OrderList', component: () => import('@/views/OrderList.vue') },
 ];
 
 const router = createRouter({

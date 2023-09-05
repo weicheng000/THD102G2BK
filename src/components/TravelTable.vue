@@ -1,27 +1,22 @@
 <template>
   <div>
     <vxe-grid ref="xGrid" v-bind="gridOptions">
-      <template #toolbar_buttons>
-        <vxe-input type="text" placeholder="請輸入名稱"></vxe-input>
-        <vxe-button status="primary">查詢</vxe-button>
-        <vxe-button icon="vxe-icon-square-plus" @click="insertEvent()">新增旅宿</vxe-button>
-      </template>
-
+      
       <template #toolbar_tools>
-        <vxe-form>
-          <vxe-form-item>
-            <template>
-              <vxe-input type="text" placeholder="請输入名稱"></vxe-input>
+        <vxe-form :data="formData" @submit="searchEvent">
+          <vxe-form-item field="name">
+            <template #default>
+              <vxe-input v-model="formData.HotelId" type="text" placeholder="請輸入編號"></vxe-input>
             </template>
           </vxe-form-item>
           <vxe-form-item>
-            <template>
+            <template #default>
               <vxe-button type="submit" status="primary" content="查詢"></vxe-button>
-              <vxe-button type="reset" content="重置"></vxe-button>
             </template>
           </vxe-form-item>
         </vxe-form>
       </template>
+
       <template #view="{ row }">
         <!-- 自定義的按鈕或其他內容 -->
         <span v-if="row.Info === false">已下架</span>
@@ -145,9 +140,12 @@ const xGrid = ref();
 const selectRow = ref();
 const showEdit = ref(false);
 
+const formData = reactive({
+  HotelId: ''
+})
+
 const gridOptions = reactive({
   border: true,
-  height: 600,
   rowConfig: {
     keyField: "id",
   },
@@ -158,6 +156,9 @@ const gridOptions = reactive({
   checkboxConfig: {
     //控制是否可以有checkbox屬性
     reserve: true,
+  },
+  filterConfig: {
+    remote: true
   },
   pagerConfig: {
     //控制是否可以分頁
@@ -197,32 +198,39 @@ const gridOptions = reactive({
   },
   proxyConfig: {
     seq: true,
+    filter: true,
     props: {
       result: "result",
       total: "page.total",
     },
     ajax: {
       // 接收 Promise
-      query: async ({ page }) => {
+      query: async ({ page, filters }) => {
+        const queryParams = Object.assign({}, formData);
+
+        filters.forEach(({ field, values }) => {
+          queryParams[field] = values.join(',')
+        })
+
         await new Promise((resolve) => setTimeout(resolve, 10));
         const res = await fetch(
-          `/PHP/TourTable/select.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}`
+          `/thd102/g2/php/TourTable/select.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}&${XEUtils.serialize(queryParams)}`
         )
         const data = await res.json();
-        // fixme: need to join images table
+        // todo: need to join images table
         const result = data.result.map((item) => ({
           HotelId: formatValue(item.ID, "SH"),
           HotelName: item.HOTELNAME,
-          Info: item.MODE == 1 ? true : false,
+          Info: item.MODE == "1" ? true : false,
           Address: item.HOTELADD,
           RoomType: [
-            item.DOGROOM == 1 ? '狗套房': '', item.CATROOM == 1 ? '貓套房': ''],
+            item.DOGROOM == "1" ? '狗套房': '', item.CATROOM == "1" ? '貓套房': ''],
           RomeSet: [
-            item.SAN == 1 ? '衛生': '',
-            item.AC == 1 ? '冷氣': '', 
-            item.CCTV == 1 ? '監控': '', 
-            item.HUM == 1 ? '濕度': '', 
-            item.WF == 1 ? '濾水器': ''
+            item.SAN == "1" ? '衛生': '',
+            item.AC == "1" ? '冷氣': '', 
+            item.CCTV == "1" ? '監控': '', 
+            item.HUM == "1" ? '濕度': '', 
+            item.WF == "1" ? '濾水器': ''
           ],
           Comment: item.HOTELINTRO,
         }));
@@ -254,6 +262,13 @@ const showdetail = (row) => {
   selectRow.value = row;
   showDetails.value = true;
 };
+
+const searchEvent = () => {
+  const $grid = xGrid.value
+  if ($grid) {
+    $grid.commitProxy('query')
+  }
+}
 
 const insertEvent = () => {
   // Object.assign(formData, {
