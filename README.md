@@ -1,7 +1,10 @@
-# Vue 3 + Vite
+# THD102G2BK
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+緯育前端班 THD102 後台
+使用框架為 Vue.js
+使用打包工具為 Vite
+使用套件為 VXE-table
+以及各種手刻功能
 
-## Recommended IDE Setup
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+## 2023/8 By Jason
