@@ -1,7 +1,11 @@
 <template>
   <div>
     <vxe-grid ref="xGrid" v-bind="gridOptions">
-      
+
+      <template #toolbar_buttons>
+        <vxe-button icon="vxe-icon-square-plus" @click="insertEvent()">新增旅宿</vxe-button>
+      </template>
+
       <template #toolbar_tools>
         <vxe-form :data="formData" @submit="searchEvent">
           <vxe-form-item field="name">
@@ -26,68 +30,51 @@
         <vxe-switch v-model="row.Info"></vxe-switch>
       </template>
       <template #icon="{ row }">
-        <vxe-button @click="showdetail(row)" circle><i class="vxe-icon-edit"></i></vxe-button>
+        <vxe-button @click="editEvent(row)" circle><i class="vxe-icon-edit"></i></vxe-button>
       </template>
     </vxe-grid>
 
-    <!-- 第一彈窗 測試用 -->
-    <vxe-modal v-model="showDetails" title="旅宿詳情" width="600" height="500" show-footer>
-      <template #default>
-        <h6>請雙擊欄位以啟用編輯模式</h6>
-        <vxe-table border="inner" auto-resize show-overflow height="auto" ref="xTable" :row-config="{ isHover: true }"
-          :show-header="false" :sync-resize="showDetails" :edit-config="{ trigger: 'dblclick', mode: 'cell' }"
-          :data="detailData">
-          <vxe-column field="label" width="25%"></vxe-column>
-          <vxe-column field="value" :edit-render="{}">
-            <template #edit="{ row }">
-              <vxe-input v-model="row.value" type="text" placeholder="{ row }"></vxe-input>
-            </template>
-          </vxe-column>
-        </vxe-table>
-      </template>
-    </vxe-modal>
-
     <!-- 真 彈窗 實際開發用 -->
-    <vxe-modal title="新增旅宿" v-model="showEdit" width="1000" resize destroy-on-close>
+    <vxe-modal :title="selectColumn ? '编辑&保存' : '新增&保存'" v-model="showEdit" width="1000" resize destroy-on-close>
       <template #default>
-        <vxe-form>
+        <vxe-form :data="newformData" @submit="submitEvent">
           <vxe-form-item title="旅宿基本資料" title-align="left" :title-width="200" :span="24"
             :title-prefix="{ icon: 'vxe-icon-comment' }"></vxe-form-item>
 
           <vxe-form-item field="name" title="旅宿名稱:" :span="12" :item-render="{}">
-            <template #default>
-              <vxe-input placeholder="請輸入旅宿名稱"></vxe-input>
+            <template #default="{ data }">
+              <vxe-input v-model="data.HotelName" placeholder="請輸入旅宿名稱"></vxe-input>
             </template>
           </vxe-form-item>
 
           <vxe-form-item field="Address" title="旅宿地址:" :span="12" :item-render="{}">
-            <template #default>
-              <vxe-input placeholder="請輸入地址"></vxe-input>
+            <template #default="{ data }">
+              <vxe-input v-model="data.Address" placeholder="請輸入地址"></vxe-input>
             </template>
           </vxe-form-item>
 
           <vxe-form-item field="RomeType" title="房型:" :span="12" :item-render="{}">
-            <template #default>
-              <vxe-checkbox-group v-model="val1">
-                <vxe-checkbox label="1" content="狗套房"></vxe-checkbox>
-                <vxe-checkbox label="2" content="貓套房"></vxe-checkbox>
+            <template #default="{ data }">
+              <vxe-checkbox-group v-model="data.RoomType">
+                <vxe-checkbox label="狗套房" content="狗套房"></vxe-checkbox>
+                <vxe-checkbox label="貓套房" content="貓套房"></vxe-checkbox>
               </vxe-checkbox-group>
             </template>
           </vxe-form-item>
 
           <vxe-form-item field="RomeSet" title="設施:" :span="12" :item-render="{}">
-            <template #default>
-              <vxe-checkbox-group v-model="val2">
-                <vxe-checkbox label="1" content="衛生"></vxe-checkbox>
-                <vxe-checkbox label="2" content="冷氣"></vxe-checkbox>
-                <vxe-checkbox label="3" content="監控"></vxe-checkbox>
-                <vxe-checkbox label="4" content="濕度"></vxe-checkbox>
-                <vxe-checkbox label="5" content="濾水器"></vxe-checkbox>
+            <template #default="{ data }">
+              <vxe-checkbox-group v-model="data.RomeSet">
+                <vxe-checkbox label="衛生" content="衛生"></vxe-checkbox>
+                <vxe-checkbox label="冷氣" content="冷氣"></vxe-checkbox>
+                <vxe-checkbox label="監控" content="監控"></vxe-checkbox>
+                <vxe-checkbox label="濕度" content="濕度"></vxe-checkbox>
+                <vxe-checkbox label="濾水器" content="濾水器"></vxe-checkbox>
               </vxe-checkbox-group>
             </template>
           </vxe-form-item>
 
-          <vxe-form-item field="RomeSet" title="旅宿環境:" :span="24"></vxe-form-item>
+          <vxe-form-item title="旅宿環境:" :span="24"></vxe-form-item>
 
           <vxe-form-item :span="24">
             <template #default>
@@ -107,9 +94,9 @@
           }"></vxe-form-item>
 
           <vxe-form-item field="Comment" :span="24" :item-render="{}">
-            <template #default>
-              <vxe-textarea :autosize="{ minRows: 4, maxRows: 7 }" :show-word-count="true" placeholder="請輸入..."
-                :maxlength="125"></vxe-textarea>
+            <template #default="{ data }">
+              <vxe-textarea v-model="data.Comment" :autosize="{ minRows: 4, maxRows: 7 }" :show-word-count="true"
+                placeholder="請輸入..." :maxlength="125"></vxe-textarea>
             </template>
           </vxe-form-item>
 
@@ -122,6 +109,7 @@
         </vxe-form>
       </template>
     </vxe-modal>
+
   </div>
 </template>
 
@@ -129,20 +117,32 @@
 import { reactive, ref } from "vue";
 import XEUtils from "xe-utils";
 import DragImage from "./DragImage.vue";
+import { VXETable } from "vxe-table";
 
-const val1 = ref([]);
-const val2 = ref([]);
-
-const showDetails = ref(false);
-const detailData = ref([]);
-const xTable = ref();
 const xGrid = ref();
-const selectRow = ref();
+const selectColumn = ref();
 const showEdit = ref(false);
+const newEvents = ref(true);
 
 const formData = reactive({
-  HotelId: ''
-})
+  HotelId: '',
+  HotelName: '',
+  Info: '',
+  Address: '',
+  RoomType: [],
+  RomeSet: [],
+  Comment: '',
+});
+
+const newformData = reactive({
+  HotelId: '',
+  HotelName: '',
+  Info: '',
+  Address: '',
+  RoomType: [],
+  RomeSet: [],
+  Comment: '',
+});
 
 const gridOptions = reactive({
   border: true,
@@ -164,6 +164,11 @@ const gridOptions = reactive({
     //控制是否可以分頁
     enabled: true,
     pageSize: 10
+  },
+  editConfig: {
+    trigger: 'manual',
+    mode: 'row',
+    showStatus: true
   },
   exportConfig: {},
   columns: [
@@ -199,6 +204,7 @@ const gridOptions = reactive({
   proxyConfig: {
     seq: true,
     filter: true,
+    form: true,
     props: {
       result: "result",
       total: "page.total",
@@ -219,18 +225,18 @@ const gridOptions = reactive({
         const data = await res.json();
         // todo: need to join images table
         const result = data.result.map((item) => ({
-          HotelId: formatValue(item.ID, "SH"),
+          HotelId: item.ID,
           HotelName: item.HOTELNAME,
           Info: item.MODE == "1" ? true : false,
           Address: item.HOTELADD,
           RoomType: [
-            item.DOGROOM == "1" ? '狗套房': '', item.CATROOM == "1" ? '貓套房': ''],
+            item.DOGROOM == "1" ? '狗套房' : '', item.CATROOM == "1" ? '貓套房' : ''],
           RomeSet: [
-            item.SAN == "1" ? '衛生': '',
-            item.AC == "1" ? '冷氣': '', 
-            item.CCTV == "1" ? '監控': '', 
-            item.HUM == "1" ? '濕度': '', 
-            item.WF == "1" ? '濾水器': ''
+            item.SAN == "1" ? '衛生' : '',
+            item.AC == "1" ? '冷氣' : '',
+            item.CCTV == "1" ? '監控' : '',
+            item.HUM == "1" ? '濕度' : '',
+            item.WF == "1" ? '濾水器' : ''
           ],
           Comment: item.HOTELINTRO,
         }));
@@ -238,30 +244,53 @@ const gridOptions = reactive({
 
         return { result, page: { total } }
       },
+      save: ({ body }) => {
+
+        const requestData = {
+          HotelId: body.HotelId,
+          HotelName: body.HotelName,
+          Info: body.Info ? true : false,
+          Address: body.Address,
+          DOGROOM: body.RoomType.includes('狗套房'),
+          CATROOM: body.RoomType.includes('貓套房'),
+          SAN: body.RomeSet.includes('衛生'),
+          AC: body.RomeSet.includes('冷氣'),
+          CCTV: body.RomeSet.includes('監控'),
+          HUM: body.RomeSet.includes('濕度'),
+          WF: body.RomeSet.includes('濾水器'),
+          Comment: body.Comment,
+        };
+
+        fetch('/thd102/g2/php/TravelTable/update.php', {
+          method: 'POST', // 使用 POST 方法
+          headers: {
+            'Content-Type': 'application/json', // 設置 Content-Type 為 JSON
+          },
+          body: JSON.stringify(requestData), // 將 requestData 轉為 JSON 字符串
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json(); // 解析後端的 JSON 響應
+          })
+          .then((data) => {
+            // 在這裡處理後端的回應數據
+            console.log('成功處理後端回應：', data);
+          })
+          .catch((error) => {
+            // 處理錯誤情況
+            console.error('發生錯誤：', error);
+          });
+      }
     },
   },
 });
 //處理字串用
-function formatValue(value, tittle) {
-  const outPutValue = value.toString().padStart(5, "0");
-  return `${tittle}${outPutValue}`;
-}
-// 彈窗查看詳情&編輯&保存邏輯
-const showdetail = (row) => {
-  // console.log(row);
-  detailData.value = [
-    "HotelId",
-    "HotelName",
-    "Address",
-    "RoomType",
-    "RomeSet",
-    "Comment",
-  ].map((field) => {
-    return { label: field, value: row[field] };
-  });
-  selectRow.value = row;
-  showDetails.value = true;
-};
+// function formatValue(value, tittle) {
+//   const outPutValue = value.toString().padStart(5, "0");
+//   return `${tittle}${outPutValue}`;
+// }
 
 const searchEvent = () => {
   const $grid = xGrid.value
@@ -269,18 +298,111 @@ const searchEvent = () => {
     $grid.commitProxy('query')
   }
 }
-
-const insertEvent = () => {
-  // Object.assign(formData, {
-  //   HotelId: 0,
-  //   HotelName: '',
-  //   Address: '',
-  //   RoomType: [],
-  //   RomeSet: [],
-  //   Comment: "",
-  // })
+const editEvent = (row) => {
+  Object.assign(newformData, row);
+  selectColumn.value = row;
   showEdit.value = true;
+  newEvents.value = true;
 };
+const insertEvent = () => {
+  Object.assign(newformData, {
+    HotelId: '',
+    HotelName: '',
+    Info: '',
+    Address: '',
+    RoomType: [],
+    RomeSet: [],
+    Comment: '',
+  });
+  selectColumn.value = null;
+  showEdit.value = true;
+  newEvents.value = false;
+};
+
+const submitEvent = () => {
+  const $grid = xGrid.value;
+  if ($grid) {
+    if (newEvents.value === false) {
+      showEdit.value = false;
+      const returnData = {
+        Events: newEvents.value,
+        HotelName: newformData.HotelName,
+        Info: true,
+        Address: newformData.Address,
+        DOGROOM: newformData.RoomType.includes('狗套房')? 1 : 0,
+        CATROOM: newformData.RoomType.includes('貓套房')? 1 : 0,
+        SAN: newformData.RomeSet.includes('衛生')? 1 : 0,
+        AC: newformData.RomeSet.includes('冷氣')? 1 : 0,
+        CCTV: newformData.RomeSet.includes('監控')? 1 : 0,
+        HUM: newformData.RomeSet.includes('濕度')? 1 : 0,
+        WF: newformData.RomeSet.includes('濾水器')? 1 : 0,
+        Comment: newformData.Comment,
+      };
+
+      // 发送数据到后端 PHP API
+      fetch('/thd102/g2/php/TourTable/alter.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(returnData),
+      })
+        .then(response => response.json())
+        .then(data => {
+          // 处理后端返回的响应数据，这里可以根据需要进行处理
+          console.log(data);
+
+          // 在成功时显示消息
+          VXETable.modal.message({ content: `新增旅宿:${JSON.stringify(returnData.HotelName)}`, status: 'success' });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          // 在失败时显示错误消息
+          VXETable.modal.message({ content: '新增旅宿失敗', status: 'error' });
+        });
+
+    } else {
+      Object.assign(selectColumn.value, newformData);
+      showEdit.value = false;
+      const returnData = {
+        Events: newEvents.value,
+        HotelId: newformData.HotelId,
+        HotelName: newformData.HotelName,
+        Address: newformData.Address,
+        DOGROOM: newformData.RoomType.includes('狗套房')? 1 : 0,
+        CATROOM: newformData.RoomType.includes('貓套房')? 1 : 0,
+        SAN: newformData.RomeSet.includes('衛生')? 1 : 0,
+        AC: newformData.RomeSet.includes('冷氣')? 1 : 0,
+        CCTV: newformData.RomeSet.includes('監控')? 1 : 0,
+        HUM: newformData.RomeSet.includes('濕度')? 1 : 0,
+        WF: newformData.RomeSet.includes('濾水器')? 1 : 0,
+        Comment: newformData.Comment,
+      };
+      fetch('/thd102/g2/php/TourTable/alter.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(returnData),
+      })
+        .then(response => response.json())
+        .then(data => {
+          // 处理后端返回的响应数据，这里可以根据需要进行处理
+          console.log(data);
+
+          // 在成功时显示消息
+          VXETable.modal.message({ content: `修改旅宿:${JSON.stringify(returnData.HotelName)}`, status: 'success' });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          // 在失败时显示错误消息
+          VXETable.modal.message({ content: '修改旅宿失敗', status: 'error' });
+        });
+    }
+  }
+};
+
+
 </script>
 <style scoped>
 * {
