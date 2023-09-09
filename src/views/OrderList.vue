@@ -23,7 +23,8 @@
               </div>
               <div class="col">
                 <div class="card text-bg-secondary">
-                  <div class="card-body">訂購人會員編號：{{ formatValue($route.params.MemberId,"MB").toLocaleString("en-US") }}</div>
+                  <div class="card-body">訂購人會員編號：{{ formatValue($route.params.MemberId, "MB").toLocaleString("en-US") }}
+                  </div>
                 </div>
               </div>
               <div class="col">
@@ -91,8 +92,8 @@
 
                 <div class="row" v-show="$route.params.Info === '待審核'">
                   <div class="col-12 d-flex justify-content-end">
-                    <button class="btn btn-outline-primary me-3">拒絕</button>
-                    <button class="btn btn-primary">核准</button>
+                    <button class="btn btn-outline-primary me-3" @click="() => submit('取消')">拒絕</button>
+                    <button class="btn btn-primary" @click="() => submit('核准')">核准</button>
                   </div>
                 </div>
               </div>
@@ -117,7 +118,7 @@ export default {
   data() {
     return {
       HotelOrder: [],
-      DriverOrder: [],
+      DriverOrder: []
     };
   },
   mounted() {
@@ -168,6 +169,32 @@ export default {
     formatValue(value, tittle) {
       const outPutValue = value.toString().padStart(5, "0");
       return `${tittle}${outPutValue}`;
+    },
+    submit(value) {
+      const requestData = {
+        token: this.$route.params.OrderId,
+        key: value
+      };
+      fetch('/thd102/g2/php/OrderTableList/alter.php', {
+        method: 'POST', // You can change the method as needed (GET, POST, PUT, etc.)
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            this.$router.push('/OrderManager');
+          } else if(data.status === 'noChange'){
+            VXETable.modal.message({ content: `無變化`, status: 'error' });
+          } else {
+            console.error('Request failed with status:', data.status);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
     }
   }
 };
