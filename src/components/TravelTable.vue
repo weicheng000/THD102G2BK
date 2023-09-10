@@ -27,7 +27,7 @@
         <span v-else>上架中</span>
       </template>
       <template #edit="{ row }">
-        <vxe-switch v-model="row.Info"></vxe-switch>
+        <vxe-switch v-model="row.Info" @click="toggleInfo(row)"></vxe-switch>
       </template>
       <template #icon="{ row }">
         <vxe-button @click="editEvent(row)" circle><i class="vxe-icon-edit"></i></vxe-button>
@@ -329,13 +329,13 @@ const submitEvent = () => {
         HotelName: newformData.HotelName,
         Info: true,
         Address: newformData.Address,
-        DOGROOM: newformData.RoomType.includes('狗套房')? 1 : 0,
-        CATROOM: newformData.RoomType.includes('貓套房')? 1 : 0,
-        SAN: newformData.RomeSet.includes('衛生')? 1 : 0,
-        AC: newformData.RomeSet.includes('冷氣')? 1 : 0,
-        CCTV: newformData.RomeSet.includes('監控')? 1 : 0,
-        HUM: newformData.RomeSet.includes('濕度')? 1 : 0,
-        WF: newformData.RomeSet.includes('濾水器')? 1 : 0,
+        DOGROOM: newformData.RoomType.includes('狗套房') ? 1 : 0,
+        CATROOM: newformData.RoomType.includes('貓套房') ? 1 : 0,
+        SAN: newformData.RomeSet.includes('衛生') ? 1 : 0,
+        AC: newformData.RomeSet.includes('冷氣') ? 1 : 0,
+        CCTV: newformData.RomeSet.includes('監控') ? 1 : 0,
+        HUM: newformData.RomeSet.includes('濕度') ? 1 : 0,
+        WF: newformData.RomeSet.includes('濾水器') ? 1 : 0,
         Comment: newformData.Comment,
       };
 
@@ -369,13 +369,13 @@ const submitEvent = () => {
         HotelId: newformData.HotelId,
         HotelName: newformData.HotelName,
         Address: newformData.Address,
-        DOGROOM: newformData.RoomType.includes('狗套房')? 1 : 0,
-        CATROOM: newformData.RoomType.includes('貓套房')? 1 : 0,
-        SAN: newformData.RomeSet.includes('衛生')? 1 : 0,
-        AC: newformData.RomeSet.includes('冷氣')? 1 : 0,
-        CCTV: newformData.RomeSet.includes('監控')? 1 : 0,
-        HUM: newformData.RomeSet.includes('濕度')? 1 : 0,
-        WF: newformData.RomeSet.includes('濾水器')? 1 : 0,
+        DOGROOM: newformData.RoomType.includes('狗套房') ? 1 : 0,
+        CATROOM: newformData.RoomType.includes('貓套房') ? 1 : 0,
+        SAN: newformData.RomeSet.includes('衛生') ? 1 : 0,
+        AC: newformData.RomeSet.includes('冷氣') ? 1 : 0,
+        CCTV: newformData.RomeSet.includes('監控') ? 1 : 0,
+        HUM: newformData.RomeSet.includes('濕度') ? 1 : 0,
+        WF: newformData.RomeSet.includes('濾水器') ? 1 : 0,
         Comment: newformData.Comment,
       };
       fetch('/thd102/g2/php/TourTable/alter.php', {
@@ -391,17 +391,40 @@ const submitEvent = () => {
           console.log(data);
 
           // 在成功时显示消息
-          VXETable.modal.message({ content: `修改旅宿:${JSON.stringify(returnData.HotelName)}`, status: 'success' });
+          VXETable.modal.message({ content: `修改旅宿: ${JSON.stringify(returnData.HotelName)} 成功`, status: 'success' });
         })
         .catch(error => {
           console.error('Error:', error);
           // 在失败时显示错误消息
-          VXETable.modal.message({ content: '修改旅宿失敗', status: 'error' });
+          VXETable.modal.message({ content: `修改旅宿: ${JSON.stringify(returnData.HotelName)} 失敗`, status: 'error' });
         });
     }
   }
 };
 
+const toggleInfo = (row) => {
+  !row.Info;
+  const result = {
+    token: row.HotelId,
+    key: row.Info ? 1 : 0
+  }
+  fetch('/thd102/g2/php/TourTable/toggle.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(result),
+  }).then(res => res.json()).then(data => {
+    if (data.status === 'success') {
+      const actionName = row.Info === true ? "上架" : "下架";
+      VXETable.modal.message({ content: `${actionName}旅宿: ${row.HotelName} 成功`, status: 'success' });
+    } else {
+      VXETable.modal.message({ content: `修改旅宿: ${row.HotelName} 失敗`, status: 'error' });
+    }
+  }).catch((error) => {
+    VXETable.modal.message({ content: `修改旅宿: ${row.HotelName} 失敗`, status: 'error' });
+  })
+}
 
 </script>
 <style scoped>

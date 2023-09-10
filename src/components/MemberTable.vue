@@ -21,6 +21,12 @@
         </vxe-form>
       </template>
 
+      <template #memberId="{ row }">
+        <span>
+          {{ formatValue(row.MemberId, "MB") }}
+        </span>
+      </template>
+
       <template #view="{ row }">
         <!-- 自定義的按鈕或其他內容 -->
         <span v-if="row.Info == 1">停權</span>
@@ -28,7 +34,7 @@
         <span v-if="row.Info == 0">正常</span>
       </template>
       <template #action="{ row }">
-        <select class="form-select" v-model="row.Info">
+        <select class="form-select" v-model="row.Info" @change="changeEvents(row)">
           <option value="0" :selected="row.Info == 0">正常</option>
           <option value="1" :selected="row.Info == 1">停權</option>
           <option value="2" :selected="row.Info == 2">黑名單</option>
@@ -40,6 +46,7 @@
 
 <script setup>
 import { reactive, ref } from "vue";
+import { VXETable } from "vxe-table";
 import XEUtils from 'xe-utils';
 const xGrid = ref();
 
@@ -71,7 +78,7 @@ const gridOptions = reactive({
   exportConfig: {},
   columns: [
     //控制欄位項目與屬性
-    { field: "MemberId", title: "會員編號" },
+    { field: "MemberId", title: "會員編號", slots:{ default: "memberId"}},
     { field: "Name", title: "會員姓名" },
     { field: "Email", title: "電子郵箱" },
     { field: "Info", title: "會員狀態", slots: { default: "view" } },
@@ -117,7 +124,7 @@ const gridOptions = reactive({
 
         const data = await res.json();
         const result = data.result.map((item) => ({
-          MemberId: formatValue(item.ID, 'MB'),
+          MemberId: item.ID,
           Name: item.NAME,
           Email: item.EMAIL,
           Info: formatInfo(item.STATUS)
@@ -148,11 +155,46 @@ function formatInfo(value){
   }
 }
 
+function infoOutput(value){
+  switch (value){
+    case "1":
+      return '停權';
+    case "2":
+      return '黑名單'
+    default:
+      return '正常';
+  }
+}
+
 const searchEvent = () => {
   const $grid = xGrid.value
   if ($grid) {
     $grid.commitProxy('query')
   }
+}
+
+const changeEvents = (row) => {
+  const result = {
+    token: row.MemberId,
+    key: infoOutput(row.Info)
+  }
+  
+  fetch('/thd102/g2/php/MemberTable/toggle.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(result),
+  }).then(res => res.json()).then(data => {
+    if (data.status === 'success') {
+      const actionName = infoOutput(row.Info);
+      VXETable.modal.message({ content: `更改會員 ${row.Name} 狀態為 ${actionName} 成功`, status: 'success' });
+    } else {
+      VXETable.modal.message({ content: `更改會員 ${row.Name} 狀態失敗`, status: 'error' });
+    }
+  }).catch((error) => {
+    VXETable.modal.message({ content: `更改會員 ${row.Name} 狀態失敗`, status: 'error' });
+  })
 }
 </script>
 <style scoped>
