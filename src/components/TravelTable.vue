@@ -77,13 +77,10 @@
           <vxe-form-item title="旅宿環境:" :span="24"></vxe-form-item>
 
           <vxe-form-item :span="24">
-            <template #default>
+            <template #default="{ data }">
               <div class="row justify-content-between p-3">
-                <drag-image></drag-image>
-                <drag-image></drag-image>
-                <drag-image></drag-image>
-                <drag-image></drag-image>
-                <drag-image></drag-image>
+                <drag-image ref="imageRefs" v-for="(item, index) in imageComponents" :key="index"
+                  :name="item.name" :url="data.PicUrl[index]"></drag-image>
               </div>
             </template>
           </vxe-form-item>
@@ -132,6 +129,7 @@ const formData = reactive({
   RoomType: [],
   RomeSet: [],
   Comment: '',
+  PicUrl: []
 });
 
 const newformData = reactive({
@@ -142,7 +140,20 @@ const newformData = reactive({
   RoomType: [],
   RomeSet: [],
   Comment: '',
+  PicUrl: []
 });
+
+
+const imageRefs = ref([]); // 用于存储子组件的引用的数组
+
+// 创建一个数组来模拟多个子组件
+const imageComponents = [
+  { name: '01' },
+  { name: '02' },
+  { name: '03' },
+  { name: '04' },
+  { name: '05' }
+];
 
 const gridOptions = reactive({
   border: true,
@@ -239,50 +250,51 @@ const gridOptions = reactive({
             item.WF == "1" ? '濾水器' : ''
           ],
           Comment: item.HOTELINTRO,
+          PicUrl: item.pics
         }));
         const total = data.page.totalPages;
 
         return { result, page: { total } }
       },
-      save: ({ body }) => {
+      // save: ({ body }) => {
 
-        const requestData = {
-          HotelId: body.HotelId,
-          HotelName: body.HotelName,
-          Info: body.Info ? true : false,
-          Address: body.Address,
-          DOGROOM: body.RoomType.includes('狗套房'),
-          CATROOM: body.RoomType.includes('貓套房'),
-          SAN: body.RomeSet.includes('衛生'),
-          AC: body.RomeSet.includes('冷氣'),
-          CCTV: body.RomeSet.includes('監控'),
-          HUM: body.RomeSet.includes('濕度'),
-          WF: body.RomeSet.includes('濾水器'),
-          Comment: body.Comment,
-        };
+      //   const requestData = {
+      //     HotelId: body.HotelId,
+      //     HotelName: body.HotelName,
+      //     Info: body.Info ? true : false,
+      //     Address: body.Address,
+      //     DOGROOM: body.RoomType.includes('狗套房'),
+      //     CATROOM: body.RoomType.includes('貓套房'),
+      //     SAN: body.RomeSet.includes('衛生'),
+      //     AC: body.RomeSet.includes('冷氣'),
+      //     CCTV: body.RomeSet.includes('監控'),
+      //     HUM: body.RomeSet.includes('濕度'),
+      //     WF: body.RomeSet.includes('濾水器'),
+      //     Comment: body.Comment,
+      //   };
 
-        fetch('/thd102/g2/php/TravelTable/update.php', {
-          method: 'POST', // 使用 POST 方法
-          headers: {
-            'Content-Type': 'application/json', // 設置 Content-Type 為 JSON
-          },
-          body: JSON.stringify(requestData), // 將 requestData 轉為 JSON 字符串
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json(); // 解析後端的 JSON 響應
-          })
-          .then((data) => {
-            // 在這裡處理後端的回應數據
-            console.log('成功處理後端回應：', data);
-          })
-          .catch((error) => {
-            // 處理錯誤情況
-            console.error('發生錯誤：', error);
-          });
-      }
+      //   fetch('/thd102/g2/php/TravelTable/update.php', {
+      //     method: 'POST', // 使用 POST 方法
+      //     headers: {
+      //       'Content-Type': 'application/json', // 設置 Content-Type 為 JSON
+      //     },
+      //     body: JSON.stringify(requestData), // 將 requestData 轉為 JSON 字符串
+      //   })
+      //     .then((response) => {
+      //       if (!response.ok) {
+      //         throw new Error('Network response was not ok');
+      //       }
+      //       return response.json(); // 解析後端的 JSON 響應
+      //     })
+      //     .then((data) => {
+      //       // 在這裡處理後端的回應數據
+      //       console.log('成功處理後端回應：', data);
+      //     })
+      //     .catch((error) => {
+      //       // 處理錯誤情況
+      //       console.error('發生錯誤：', error);
+      //     });
+      // }
     },
   },
 });
@@ -319,7 +331,9 @@ const insertEvent = () => {
   newEvents.value = false;
 };
 
-const submitEvent = () => {
+
+
+const submitEvent = async () => {
   const $grid = xGrid.value;
   if ($grid) {
     if (newEvents.value === false) {
@@ -339,28 +353,51 @@ const submitEvent = () => {
         Comment: newformData.Comment,
       };
 
-      // 发送数据到后端 PHP API
-      fetch('/thd102/g2/php/TourTable/alter.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(returnData),
-      })
-        .then(response => response.json())
-        .then(data => {
-          // 处理后端返回的响应数据，这里可以根据需要进行处理
-          console.log(data);
-
-          // 在成功时显示消息
-          VXETable.modal.message({ content: `新增旅宿:${JSON.stringify(returnData.HotelName)}`, status: 'success' });
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          // 在失败时显示错误消息
-          VXETable.modal.message({ content: '新增旅宿失敗', status: 'error' });
+      try {
+        const response = await fetch('/thd102/g2/php/TourTable/alter.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(returnData),
         });
 
+        if (!response.ok) {
+          throw new Error('网络请求失败');
+        }
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          VXETable.modal.message({ content: `新增旅宿:${JSON.stringify(returnData.HotelName)}`, status: 'success' });
+
+          const newID = data.newID
+
+          const returnUrl = [];
+
+          for (const imageRef of imageRefs.value) {
+            if (imageRef) {
+              const result = await imageRef.uploadImage();
+              returnUrl.push(result);
+            }
+          }
+
+          VXETable.modal.message({ content: `旅宿:${JSON.stringify(returnData.HotelName)} 圖片已上傳`, status: 'success' });
+
+          const InsertPicData = {
+            hotelid: newID,
+            url: returnUrl
+          }
+
+          insertPic(InsertPicData);
+
+        } else {
+          return;
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        VXETable.modal.message({ content: '新增旅宿失敗', status: 'error' });
+      }
     } else {
       Object.assign(selectColumn.value, newformData);
       showEdit.value = false;
@@ -378,29 +415,54 @@ const submitEvent = () => {
         WF: newformData.RomeSet.includes('濾水器') ? 1 : 0,
         Comment: newformData.Comment,
       };
-      fetch('/thd102/g2/php/TourTable/alter.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(returnData),
-      })
-        .then(response => response.json())
-        .then(data => {
-          // 处理后端返回的响应数据，这里可以根据需要进行处理
-          console.log(data);
 
-          // 在成功时显示消息
-          VXETable.modal.message({ content: `修改旅宿: ${JSON.stringify(returnData.HotelName)} 成功`, status: 'success' });
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          // 在失败时显示错误消息
-          VXETable.modal.message({ content: `修改旅宿: ${JSON.stringify(returnData.HotelName)} 失敗`, status: 'error' });
+      try {
+        const response = await fetch('/thd102/g2/php/TourTable/alter.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(returnData),
         });
+
+        if (!response.ok) {
+          throw new Error('网络请求失败');
+        }
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          VXETable.modal.message({ content: `修改旅宿:${JSON.stringify(returnData.HotelName)}`, status: 'success' });
+
+          const returnUrl = [];
+
+          for (const imageRef of imageRefs.value) {
+            if (imageRef) {
+              const result = await imageRef.uploadImage();
+              returnUrl.push(result);
+            }
+          }
+
+          VXETable.modal.message({ content: `旅宿:${JSON.stringify(returnData.HotelName)} 圖片已上傳`, status: 'success' });
+
+          const InsertPicData = {
+            hotelid: returnData.HotelId,
+            url: returnUrl
+          }
+
+          insertPic(InsertPicData);
+
+        } else {
+          return;
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        VXETable.modal.message({ content: `修改旅宿: ${JSON.stringify(returnData.HotelName)} 失敗`, status: 'error' });
+      }
     }
   }
 };
+
 
 const toggleInfo = (row) => {
   !row.Info;
@@ -425,6 +487,36 @@ const toggleInfo = (row) => {
     VXETable.modal.message({ content: `修改旅宿: ${row.HotelName} 失敗`, status: 'error' });
   })
 }
+
+const insertPic = async (array) => {
+  try {
+    const response = await fetch('/thd102/g2/php/TourTable/insertPic.php', {
+      method: 'POST', // 使用POST方法发送数据
+      headers: {
+        'Content-Type': 'application/json', // 指定内容类型为JSON
+      },
+      body: JSON.stringify(array), // 将数组转换为JSON字符串并发送
+    });
+
+    if (!response.ok) {
+      throw new Error('网络请求失败');
+    }
+
+    const res = await response.json();
+    
+    if(res.status === 'success'){
+      VXETable.modal.message({ content: '圖片路徑上傳完成', status: 'success' });
+    }else {
+      VXETable.modal.message({ content: '圖片路徑上傳失敗,請聯絡工作人員', status: 'error' });
+    }
+
+  } catch (error) {
+    console.error('Error:', error);
+    // 在失败时显示错误消息
+    VXETable.modal.message({ content: '發送請求失敗', status: 'error' });
+  }
+}
+
 
 </script>
 <style scoped>
