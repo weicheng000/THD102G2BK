@@ -126,10 +126,22 @@ export default {
   },
   computed: {
     hotelTotalSum() {
-      return this.HotelOrder.reduce((accumulator, currentItem) => accumulator + currentItem.total, 0)
+      return this.HotelOrder.reduce((accumulator, currentItem) => {
+        const total = parseFloat(currentItem.total);
+        if (!isNaN(total)) {
+          return accumulator + total;
+        }
+        return accumulator;
+      }, 0);
     },
     driverTotalSum() {
-      return this.DriverOrder.reduce((accumulator, currentItem) => accumulator + currentItem.total, 0)
+      return this.DriverOrder.reduce((accumulator, currentItem) => {
+        const total = parseFloat(currentItem.total);
+        if (!isNaN(total)) {
+          return accumulator + total;
+        }
+        return accumulator;
+      }, 0);
     }
   }
   ,
@@ -186,7 +198,7 @@ export default {
         .then(data => {
           if (data.status === 'success') {
             this.$router.push('/OrderManager');
-          } else if(data.status === 'noChange'){
+          } else if (data.status === 'noChange') {
             VXETable.modal.message({ content: `無變化`, status: 'error' });
           } else {
             console.error('Request failed with status:', data.status);
