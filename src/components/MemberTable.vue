@@ -1,16 +1,12 @@
 <template>
   <div>
     <vxe-grid ref="xGrid" v-bind="gridOptions">
-      <!-- <template #toolbar_buttons>
-        <vxe-input placeholder="訂單編號"></vxe-input>
-        <vxe-button status="primary">搜索</vxe-button>
-      </template> -->
 
       <template #toolbar_tools>
         <vxe-form :data="formData" @submit="searchEvent">
           <vxe-form-item field="name">
             <template #default>
-              <vxe-input v-model="formData.MemberId" type="text" placeholder="請輸入會員編號"></vxe-input>
+              <vxe-input v-model="formData.id" type="text" placeholder="請輸入會員編號"></vxe-input>
             </template>
           </vxe-form-item>
           <vxe-form-item>
@@ -23,21 +19,21 @@
 
       <template #memberId="{ row }">
         <span>
-          {{ formatValue(row.MemberId, "MB") }}
+          {{ formatValue(row.id, "MB") }}
         </span>
       </template>
 
       <template #view="{ row }">
         <!-- 自定義的按鈕或其他內容 -->
-        <span v-if="row.Info == 1">停權</span>
-        <span v-if="row.Info == 2">黑名單</span>
-        <span v-if="row.Info == 0">正常</span>
+        <span v-if="row.status == '停權'">停權</span>
+        <span v-if="row.status == '黑名單'">黑名單</span>
+        <span v-if="row.status == '正常'">正常</span>
       </template>
       <template #action="{ row }">
-        <select class="form-select" v-model="row.Info" @change="changeEvents(row)">
-          <option value="0" :selected="row.Info == 0">正常</option>
-          <option value="1" :selected="row.Info == 1">停權</option>
-          <option value="2" :selected="row.Info == 2">黑名單</option>
+        <select class="form-select" v-model="row.status" @change="changeEvents(row)">
+          <option value="正常" :selected="row.status == '正常'">正常</option>
+          <option value="停權" :selected="row.status == '停權'">停權</option>
+          <option value="黑名單" :selected="row.status == '黑名單'">黑名單</option>
         </select>
       </template>
     </vxe-grid>
@@ -51,7 +47,7 @@ import XEUtils from 'xe-utils';
 const xGrid = ref();
 
 const formData = reactive({
-  MemberId: ''
+  id: ''
 })
 
 const gridOptions = reactive({
@@ -78,10 +74,10 @@ const gridOptions = reactive({
   exportConfig: {},
   columns: [
     //控制欄位項目與屬性
-    { field: "MemberId", title: "會員編號", slots:{ default: "memberId"}},
-    { field: "Name", title: "會員姓名" },
-    { field: "Email", title: "電子郵箱" },
-    { field: "Info", title: "會員狀態", slots: { default: "view" } },
+    { field: "id", title: "會員編號", slots:{ default: "memberId"}},
+    { field: "name", title: "會員姓名" },
+    { field: "email", title: "電子郵箱" },
+    { field: "status", title: "會員狀態", slots: { default: "view" } },
     { title: "動作", slots: { default: "action" } },
   ],
   toolbarConfig: {
@@ -111,7 +107,7 @@ const gridOptions = reactive({
     ajax: {
       // 接收 Promise
       query: async ({ page, filters }) => {
-        const queryParams = Object.assign({}, formData);
+        const queryParams = { ...formData};
 
         filters.forEach(({ field, values }) => {
           queryParams[field] = values.join(',')
@@ -119,53 +115,37 @@ const gridOptions = reactive({
 
         await new Promise((resolve) => setTimeout(resolve, 10));
         const res = await fetch(
-          `/thd102/g2/php/MemberTable/select.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}&${XEUtils.serialize(queryParams)}`
+          `/api/members/page/${page.currentPage}/${page.pageSize}?${XEUtils.serialize(queryParams)}`
         );
 
-        const data = await res.json();
-        const result = data.result.map((item) => ({
-          MemberId: item.ID,
-          Name: item.NAME,
-          Email: item.EMAIL,
-          Info: formatInfo(item.STATUS)
-        }));
-        const total = data.page.totalPages;
-
-        return { result, page: { total } }
+        const response = await res.json();
+        
+        if(response.code === 1){
+          const result = response.data.rows;
+          const total = response.data.total;
+          return { result, page: { total } }
+        }
       },
     },
   },
 });
 
+/**
+ * 美化資料的方法
+ * 私心非常想刪除... <Jason>
+ * @param {Number} value 傳入的值
+ * @param {String} tittle 要給他加上的開頭
+ * @param {String} return 還你一個擴充為5位數加上title的字串 Ex: 1 => MB00001
+ */
 function formatValue(value, tittle) {
   const outPutValue = value.toString().padStart(5, "0");
   return `${tittle}${outPutValue}`;
 }
 
-function formatInfo(value){
-  switch (value){
-    case '正常':
-      return 0;
-    case '停權':
-      return 1;
-    case '黑名單':
-      return 2;
-    default:
-      return 3;
-  }
-}
-
-function infoOutput(value){
-  switch (value){
-    case "1":
-      return '停權';
-    case "2":
-      return '黑名單'
-    default:
-      return '正常';
-  }
-}
-
+/**
+ * 主表查詢功能
+ * 在vxe-grid外調用vxe-grid的proxy方法
+ */
 const searchEvent = () => {
   const $grid = xGrid.value
   if ($grid) {
@@ -173,29 +153,33 @@ const searchEvent = () => {
   }
 }
 
+/**
+ * 從主表修改會員狀態
+ * @param {Array<Row>} row 主表中的資料
+ */
 const changeEvents = (row) => {
   const result = {
-    token: row.MemberId,
-    key: infoOutput(row.Info)
+    id: row.id,
+    status: row.status
   }
   
-  fetch('/thd102/g2/php/MemberTable/toggle.php', {
-    method: 'POST',
+  fetch('/api/members', {
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(result),
   }).then(res => res.json()).then(data => {
-    if (data.status === 'success') {
-      const actionName = infoOutput(row.Info);
-      VXETable.modal.message({ content: `更改會員 ${row.Name} 狀態為 ${actionName} 成功`, status: 'success' });
+    if (data.code === 1) {
+      VXETable.modal.message({ content: `更改會員 ${row.name} 狀態為 ${row.status} 成功`, status: 'success' });
     } else {
-      VXETable.modal.message({ content: `更改會員 ${row.Name} 狀態失敗`, status: 'error' });
+      VXETable.modal.message({ content: `更改會員 ${row.name} 狀態失敗`, status: 'error' });
     }
   }).catch((error) => {
-    VXETable.modal.message({ content: `更改會員 ${row.Name} 狀態失敗`, status: 'error' });
+    VXETable.modal.message({ content: `更改會員 ${row.name} 狀態失敗`, status: 'error' });
   })
 }
+
 </script>
 <style scoped>
 * {

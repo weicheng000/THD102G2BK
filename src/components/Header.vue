@@ -8,18 +8,18 @@ export default {
   },
   setup(){
     const userName = ref();
-    const checkLogin = () => {
-      const user = JSON.parse(localStorage.getItem('user'));
-      if(user && user.login === true){
-        userName.value = user.account;
-      }else{
-        router.push('/')
-      }
-    };
+    // const checkLogin = () => {
+    //   const user = JSON.parse(localStorage.getItem('user'));
+    //   if(user && user.login === true){
+    //     userName.value = user.account;
+    //   }else{
+    //     router.push('/')
+    //   }
+    // };
 
-    onMounted(() => {
-      checkLogin();
-    });
+    // onMounted(() => {
+    //   checkLogin();
+    // });
     
     return {
       userName

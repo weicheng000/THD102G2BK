@@ -15,4 +15,9 @@ const router = createRouter({
   routes
 });
 
+// const router = createRouter({
+//   history: createWebHistory(), // 使用History API
+//   routes
+// });
+
 export default router;

@@ -153,18 +153,11 @@ const searchEvent = () => {
     $grid.commitProxy('query')
   }
 }
-// const resetEvent = () => {
-//   const $grid = xGrid.value
-//   if ($grid) {
-//     $grid.commitProxy('reload')
-//   }
-// }
 
 const modalShow = (row) => {
   modalData.src = row.PhotoSrc;
   modalData.ID = row.PaperId
 }
-
 
 
 const toggle = (row) => {

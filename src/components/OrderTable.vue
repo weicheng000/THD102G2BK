@@ -1,16 +1,12 @@
 <template>
   <div>
     <vxe-grid ref="xGrid" v-bind="gridOptions">
-      <!-- <template #toolbar_buttons>
-        <vxe-input placeholder="訂單編號"></vxe-input>
-        <vxe-button status="primary">搜索</vxe-button>
-      </template> -->
 
       <template #toolbar_tools>
         <vxe-form :data="formData" @submit="searchEvent">
           <vxe-form-item field="name">
             <template #default>
-              <vxe-input v-model="formData.ID" type="text" placeholder="請輸入訂單編號"></vxe-input>
+              <vxe-input v-model="formData.id" type="text" placeholder="請輸入訂單編號"></vxe-input>
             </template>
           </vxe-form-item>
           <vxe-form-item>
@@ -21,30 +17,20 @@
         </vxe-form>
       </template>
 
-      <template #OrderId="{ row }">
-        <!-- 自定義的按鈕或其他內容 -->
-        <span>{{ formatValue(row.ID, "OR") }}</span>
-      </template>
-
-      <template #MemberId="{ row }">
-        <!-- 自定義的按鈕或其他內容 -->
-        <span>{{ formatValue(row.MEMBER_ID, "MB") }}</span>
-      </template>
-
       <template #view="{ row }">
         <!-- 自定義的按鈕或其他內容 -->
-        <button type="button" class="btn btn-link" :disabled="row.ORDERSTAUS === '待審核'"
-          @click="toPage(row.ID, row.ORDERSTAUS, row.MEMBER_ID)">
+        <button type="button" class="btn btn-link" :disabled="row.orderStatus == '待審核'"
+          @click="toPage(row.id, row.memberId, row.orderStatus)">
           <i class="vxe-icon-eye-fill"></i>
         </button>
       </template>
       <template #text="{ row }">
         <!-- 自定義的按鈕或其他內容 -->
-        <button v-if="row.ORDERSTAUS === '待審核'" type="button" class="btn btn-link"
-          @click="toPage(row.ID, row.ORDERSTAUS, row.MEMBER_ID)">
+        <button v-if="row.orderStatus === '待審核'" type="button" class="btn btn-link"
+          @click="toPage(row.id, row.memberId, row.orderStatus)">
           待審核
         </button>
-        <span v-else>{{ row.ORDERSTAUS }}</span>
+        <span v-else>{{ row.orderStatus }}</span>
       </template>
     </vxe-grid>
   </div>
@@ -58,7 +44,7 @@ import XEUtils from 'xe-utils';
 const xGrid = ref();
 
 const formData = reactive({
-  ID: ''
+  id: ''
 })
 
 const gridOptions = reactive({
@@ -85,14 +71,10 @@ const gridOptions = reactive({
   exportConfig: {},
   columns: [
     //控制欄位項目與屬性
-    { field: "ID", title: "訂單編號", slots: { default: "OrderId" } },
-    {
-      field: "MEMBER_ID",
-      title: "訂購人會員編號",
-      slots: { default: "MemberId" },
-    },
-    { field: "ORDERDATE", title: "訂單日期" },
-    { field: "ORDERSTAUS", title: "查看", slots: { default: "view" } },
+    { field: "id", title: "訂單編號" },
+    { field: "memberId", title: "訂購人會員編號" },
+    { field: "orderDate", title: "訂單日期" },
+    { field: "orderStatus", title: "查看", slots: { default: "view" } },
     { field: "", title: "狀態", slots: { default: "text" } },
   ],
   toolbarConfig: {
@@ -130,14 +112,18 @@ const gridOptions = reactive({
 
         await new Promise((resolve) => setTimeout(resolve, 10));
         const res = await fetch(
-          `/thd102/g2/php/OrderTable/select.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}&${XEUtils.serialize(queryParams)}`
+          `/api/orders/page/${page.currentPage}/${page.pageSize}?${XEUtils.serialize(queryParams)}`
         );
 
-        const data = await res.json();
-        const result = data.result;
-        const total = data.page.totalPages;
+        const response = await res.json();
 
-        return { result, page: { total } };
+        if (response.code == 1) {
+          const result = response.data.rows;
+          const total = response.data.total;
+          return { result, page: { total } };
+        }
+
+
       },
     },
   },
@@ -158,8 +144,9 @@ const searchEvent = () => {
 // 跳頁邏輯
 const router = useRouter();
 
-const toPage = (orderId, info, memberId) => {
-  router.push({ name: "OrderList", params: { OrderId: orderId, Info: info, MemberId: memberId } });
+const toPage = (orderId, memberId, orderStaus) => {
+  console.log(orderStaus);
+  router.push({ name: "OrderList", params: { OrderId: orderId, MemberId: memberId, Info: orderStaus} });
 };
 </script>
 <style scoped>

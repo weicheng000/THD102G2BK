@@ -5,26 +5,26 @@ import router from '@/router';
 export default {
   setup() {
     const account = reactive({
-      account: '',
+      username: '',
       password: ''
     });
 
-    const checkLogin = () => {
-      const user = JSON.parse(localStorage.getItem('user'));
+    // const checkLogin = () => {
+    //   const user = JSON.parse(localStorage.getItem('user'));
 
-      if (user && user.login === true) {
-        // 如果用戶已經登入，自動導向登入後的頁面
-        router.push('/OrderManager');
-      }
-    };
+    //   if (user && user.login === true) {
+    //     // 如果用戶已經登入，自動導向登入後的頁面
+    //     router.push('/OrderManager');
+    //   }
+    // };
 
-    onMounted(() => {
-      checkLogin();
-    });
+    // onMounted(() => {
+    //   checkLogin();
+    // });
 
     const login = async () => {
       try {
-        const res = await fetch('/thd102/g2/php/BackgroundLogin/login.php', {
+        const res = await fetch('/api/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -35,17 +35,18 @@ export default {
         const responseText = await res.text(); // 将响应内容转换为字符串
         const responseJson = JSON.parse(responseText);
 
-        if (responseJson.login === 'success') {
-          console.log('login!');
-          const user = {
-            account: account.account,
-            login: true
-          }
-          localStorage.setItem('user', JSON.stringify(user));
+        if (responseJson.code === 1) {
+          // console.log('login!');
+          // const user = {
+          //   account: account.account,
+          //   login: true
+          // }
+          // localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('token', JSON.stringify(responseJson.data));
           router.push('/OrderManager')
 
         } else {
-          console.log('Bad!');
+          console.log(responseJson.msg);
         }
       } catch (error) {
         console.log(error);
@@ -53,7 +54,7 @@ export default {
     };
 
     const TypeAuto = () => {
-      account.account = 'petpago';
+      account.username = 'petpago';
       account.password = 'a123456'
     }
 
@@ -75,7 +76,7 @@ export default {
       </div>
       <div class="inputType">
         <label for="adminID">帳號</label>
-        <input v-model="account.account" type="text" class="inputBar" />
+        <input v-model="account.username" type="text" class="inputBar" />
       </div>
       <div class="inputType">
         <label for="bg_password">密碼</label>

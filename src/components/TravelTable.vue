@@ -79,8 +79,8 @@
           <vxe-form-item :span="24">
             <template #default="{ data }">
               <div class="row justify-content-between p-3">
-                <drag-image ref="imageRefs" v-for="(item, index) in imageComponents" :key="index"
-                  :name="item.name" :url="data.PicUrl[index]"></drag-image>
+                <drag-image ref="imageRefs" v-for="(item, index) in imageComponents" :key="index" :name="item.name"
+                  :url="data.PicUrl[index]"></drag-image>
               </div>
             </template>
           </vxe-form-item>
@@ -109,11 +109,15 @@
 
   </div>
 </template>
-
 <script setup>
+/**
+ * 這頁設計的其實挺失敗的，為了省事強行將兩頁內容合成一頁實在不是明智之舉
+ * 應該把彈窗的Code獨立成一個組件
+ * 如果還沒找到工作，就接著改吧... 2023/10/11
+ */
 import { reactive, ref } from "vue";
-import XEUtils from "xe-utils";
-import DragImage from "./DragImage.vue";
+import XEUtils from "xe-utils"; // 處理 String 的工具，這裡主要用來將物件快速轉換為queryParam
+import DragImage from "./DragImage.vue"; // 拖動圖片的插件，手刻，包擴上傳圖片的功能
 import { VXETable } from "vxe-table";
 
 const xGrid = ref();
@@ -231,91 +235,62 @@ const gridOptions = reactive({
 
         await new Promise((resolve) => setTimeout(resolve, 10));
         const res = await fetch(
-          `/thd102/g2/php/TourTable/select.php?currentPage=${page.currentPage}&pageSize=${page.pageSize}&${XEUtils.serialize(queryParams)}`
+          `/api/hotels/page/${page.currentPage}/${page.pageSize}?${XEUtils.serialize(queryParams)}`
         )
-        const data = await res.json();
+        const response = await res.json();
         // todo: need to join images table
-        const result = data.result.map((item) => ({
-          HotelId: item.ID,
-          HotelName: item.HOTELNAME,
-          Info: item.MODE == "1" ? true : false,
-          Address: item.HOTELADD,
-          RoomType: [
-            item.DOGROOM == "1" ? '狗套房' : '', item.CATROOM == "1" ? '貓套房' : ''],
-          RomeSet: [
-            item.SAN == "1" ? '衛生' : '',
-            item.AC == "1" ? '冷氣' : '',
-            item.CCTV == "1" ? '監控' : '',
-            item.HUM == "1" ? '濕度' : '',
-            item.WF == "1" ? '濾水器' : ''
-          ],
-          Comment: item.HOTELINTRO,
-          PicUrl: item.pics
-        }));
-        const total = data.page.totalPages;
+        if (response.code === 1) {
 
-        return { result, page: { total } }
-      },
-      // save: ({ body }) => {
+          const result = response.data.rows.map((item) => ({
+            HotelId: item.id,
+            HotelName: item.hotelName,
+            Info: item.mode == "1" ? true : false,
+            Address: item.hotelAddress,
+            RoomType: [
+              item.dogRoom == "1" ? '狗套房' : '', item.catRoom == "1" ? '貓套房' : ''],
+            RomeSet: [
+              item.san == "1" ? '衛生' : '',
+              item.ac == "1" ? '冷氣' : '',
+              item.cctv == "1" ? '監控' : '',
+              item.hum == "1" ? '濕度' : '',
+              item.wf == "1" ? '濾水器' : ''
+            ],
+            Comment: item.hotelInfo,
+          }));
 
-      //   const requestData = {
-      //     HotelId: body.HotelId,
-      //     HotelName: body.HotelName,
-      //     Info: body.Info ? true : false,
-      //     Address: body.Address,
-      //     DOGROOM: body.RoomType.includes('狗套房'),
-      //     CATROOM: body.RoomType.includes('貓套房'),
-      //     SAN: body.RomeSet.includes('衛生'),
-      //     AC: body.RomeSet.includes('冷氣'),
-      //     CCTV: body.RomeSet.includes('監控'),
-      //     HUM: body.RomeSet.includes('濕度'),
-      //     WF: body.RomeSet.includes('濾水器'),
-      //     Comment: body.Comment,
-      //   };
+          const total = response.data.total;
 
-      //   fetch('/thd102/g2/php/TravelTable/update.php', {
-      //     method: 'POST', // 使用 POST 方法
-      //     headers: {
-      //       'Content-Type': 'application/json', // 設置 Content-Type 為 JSON
-      //     },
-      //     body: JSON.stringify(requestData), // 將 requestData 轉為 JSON 字符串
-      //   })
-      //     .then((response) => {
-      //       if (!response.ok) {
-      //         throw new Error('Network response was not ok');
-      //       }
-      //       return response.json(); // 解析後端的 JSON 響應
-      //     })
-      //     .then((data) => {
-      //       // 在這裡處理後端的回應數據
-      //       console.log('成功處理後端回應：', data);
-      //     })
-      //     .catch((error) => {
-      //       // 處理錯誤情況
-      //       console.error('發生錯誤：', error);
-      //     });
-      // }
+          return { result, page: { total } }
+        }
+      }
     },
   },
 });
-//處理字串用
-// function formatValue(value, tittle) {
-//   const outPutValue = value.toString().padStart(5, "0");
-//   return `${tittle}${outPutValue}`;
-// }
 
+/**
+ * 搜索功能，直接映射到vxe-grid的proxy的設定
+ */
 const searchEvent = () => {
   const $grid = xGrid.value
   if ($grid) {
     $grid.commitProxy('query')
   }
 }
+
+/**
+ * 修改現有旅館時導入數據的方法
+ * @param {Array<Row>} row 從主表導入的資料
+ */
 const editEvent = (row) => {
   Object.assign(newformData, row);
   selectColumn.value = row;
   showEdit.value = true;
   newEvents.value = true;
 };
+
+/**
+ * 開啟新增旅館按鍵時進行初始化操作
+ */
 const insertEvent = () => {
   Object.assign(newformData, {
     HotelId: '',
@@ -332,39 +307,43 @@ const insertEvent = () => {
 };
 
 
-
+/**
+ * 提交功能
+ * 寫得那麼長看的煩 <Jason>
+ */
 const submitEvent = async () => {
   const $grid = xGrid.value;
   if ($grid) {
+    /**
+     * 別在意這個判斷，變數是錯的，但結果是對的懶得改了
+     */
     if (newEvents.value === false) {
+      /**
+       * 此段為新增操作
+       */
       showEdit.value = false;
       const returnData = {
-        Events: newEvents.value,
-        HotelName: newformData.HotelName,
-        Info: true,
-        Address: newformData.Address,
-        DOGROOM: newformData.RoomType.includes('狗套房') ? 1 : 0,
-        CATROOM: newformData.RoomType.includes('貓套房') ? 1 : 0,
-        SAN: newformData.RomeSet.includes('衛生') ? 1 : 0,
-        AC: newformData.RomeSet.includes('冷氣') ? 1 : 0,
-        CCTV: newformData.RomeSet.includes('監控') ? 1 : 0,
-        HUM: newformData.RomeSet.includes('濕度') ? 1 : 0,
-        WF: newformData.RomeSet.includes('濾水器') ? 1 : 0,
-        Comment: newformData.Comment,
+        hotelName: newformData.HotelName,
+        mode: 1,
+        hotelAddress: newformData.Address,
+        dogRoom: newformData.RoomType.includes('狗套房') ? 1 : 0,
+        catRoom: newformData.RoomType.includes('貓套房') ? 1 : 0,
+        san: newformData.RomeSet.includes('衛生') ? 1 : 0,
+        ac: newformData.RomeSet.includes('冷氣') ? 1 : 0,
+        cctv: newformData.RomeSet.includes('監控') ? 1 : 0,
+        hum: newformData.RomeSet.includes('濕度') ? 1 : 0,
+        wf: newformData.RomeSet.includes('濾水器') ? 1 : 0,
+        hotelInfo: newformData.Comment,
       };
 
       try {
         const response = await fetch('/thd102/g2/php/TourTable/alter.php', {
-          method: 'POST',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(returnData),
         });
-
-        if (!response.ok) {
-          throw new Error('网络请求失败');
-        }
 
         const data = await response.json();
 
@@ -399,10 +378,12 @@ const submitEvent = async () => {
         VXETable.modal.message({ content: '新增旅宿失敗', status: 'error' });
       }
     } else {
+      /**
+       * 此段為修改操作
+       */
       Object.assign(selectColumn.value, newformData);
       showEdit.value = false;
       const returnData = {
-        Events: newEvents.value,
         HotelId: newformData.HotelId,
         HotelName: newformData.HotelName,
         Address: newformData.Address,
@@ -463,56 +444,71 @@ const submitEvent = async () => {
   }
 };
 
-
+/**
+ * 修改主表的會員狀態
+ * @param {Array<Row>} row 從主表傳入的資料
+ */
 const toggleInfo = (row) => {
+  /**
+   * 什麼傻逼，前後端用不同格式的名字
+   * 常量才用全大寫，資料庫從設計就是全大寫
+   * 搞得我500行Code有一半的篇幅在處理資料格式
+   * 不管哪家套件的自動裝箱都處理不了這種屎命名
+   * 硬生生手刻，簡稱為搬磚
+   * 重寫到這，實在忍不了了，小噴一波不留名
+   */
   !row.Info;
   const result = {
-    token: row.HotelId,
-    key: row.Info ? 1 : 0
+    id: row.HotelId,
+    mode: row.Info ? 1 : 0
   }
-  fetch('/thd102/g2/php/TourTable/toggle.php', {
-    method: 'POST',
+  fetch('/api/hotels', {
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(result),
   }).then(res => res.json()).then(data => {
-    if (data.status === 'success') {
+    if (data.code === 1) {
       const actionName = row.Info === true ? "上架" : "下架";
       VXETable.modal.message({ content: `${actionName}旅宿: ${row.HotelName} 成功`, status: 'success' });
     } else {
-      VXETable.modal.message({ content: `修改旅宿: ${row.HotelName} 失敗`, status: 'error' });
+      VXETable.modal.message({ content: `修改旅宿: ${row.HotelName} 失敗， ${data.msg}`, status: 'error' });
     }
   }).catch((error) => {
     VXETable.modal.message({ content: `修改旅宿: ${row.HotelName} 失敗`, status: 'error' });
   })
 }
 
+/**
+ * 新增旅館的方法
+ * @param {Array<Row>} array 
+ */
 const insertPic = async (array) => {
   try {
     const response = await fetch('/thd102/g2/php/TourTable/insertPic.php', {
-      method: 'POST', // 使用POST方法发送数据
+      method: 'POST',
       headers: {
-        'Content-Type': 'application/json', // 指定内容类型为JSON
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(array), // 将数组转换为JSON字符串并发送
+      body: JSON.stringify(array),
     });
 
     if (!response.ok) {
-      throw new Error('网络请求失败');
+      throw new Error('網路連線失敗');
     }
 
     const res = await response.json();
-    
-    if(res.status === 'success'){
+
+    if (res.status === 'success') {
       VXETable.modal.message({ content: '圖片路徑上傳完成', status: 'success' });
-    }else {
+    } else {
       VXETable.modal.message({ content: '圖片路徑上傳失敗,請聯絡工作人員', status: 'error' });
     }
 
   } catch (error) {
     console.error('Error:', error);
-    // 在失败时显示错误消息
+    // 在失敗時顯示錯誤消息
     VXETable.modal.message({ content: '發送請求失敗', status: 'error' });
   }
 }
