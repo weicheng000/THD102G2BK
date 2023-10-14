@@ -35,7 +35,11 @@
     </vxe-grid>
 
     <!-- 真 彈窗 實際開發用 -->
-    <vxe-modal :title="selectColumn ? '编辑&保存' : '新增&保存'" v-model="showEdit" width="1000" resize destroy-on-close>
+    
+    <hotel-modal :isShow="isShow" :initialData="newformData" @update:isShow="updateIsShow" />
+    
+    
+    <!-- <vxe-modal :title="selectColumn ? '编辑&保存' : '新增&保存'" v-model="showEdit" width="1000" resize destroy-on-close>
       <template #default>
         <vxe-form :data="newformData" @submit="submitEvent">
           <vxe-form-item title="旅宿基本資料" title-align="left" :title-width="200" :span="24"
@@ -105,7 +109,7 @@
           </vxe-form-item>
         </vxe-form>
       </template>
-    </vxe-modal>
+    </vxe-modal> -->
 
   </div>
 </template>
@@ -119,6 +123,15 @@ import { reactive, ref } from "vue";
 import XEUtils from "xe-utils"; // 處理 String 的工具，這裡主要用來將物件快速轉換為queryParam
 import DragImage from "./DragImage.vue"; // 拖動圖片的插件，手刻，包擴上傳圖片的功能
 import { VXETable } from "vxe-table";
+import HotelModal from '@/components/HotelModal.vue';
+
+/**
+ * 彈窗開關
+ */
+const isShow = ref(false);
+function updateIsShow(value) {
+  isShow.value = value;
+}
 
 const xGrid = ref();
 const selectColumn = ref();
@@ -150,14 +163,6 @@ const newformData = reactive({
 
 const imageRefs = ref([]); // 用于存储子组件的引用的数组
 
-// 创建一个数组来模拟多个子组件
-const imageComponents = [
-  { name: '01' },
-  { name: '02' },
-  { name: '03' },
-  { name: '04' },
-  { name: '05' }
-];
 
 const gridOptions = reactive({
   border: true,
@@ -255,7 +260,7 @@ const gridOptions = reactive({
               item.hum == "1" ? '濕度' : '',
               item.wf == "1" ? '濾水器' : ''
             ],
-            Comment: item.hotelInfo,
+            Comment: item.hotelIntro,
           }));
 
           const total = response.data.total;
@@ -284,7 +289,7 @@ const searchEvent = () => {
 const editEvent = (row) => {
   Object.assign(newformData, row);
   selectColumn.value = row;
-  showEdit.value = true;
+  isShow.value = true;
   newEvents.value = true;
 };
 
@@ -302,7 +307,7 @@ const insertEvent = () => {
     Comment: '',
   });
   selectColumn.value = null;
-  showEdit.value = true;
+  isShow.value = true;
   newEvents.value = false;
 };
 
